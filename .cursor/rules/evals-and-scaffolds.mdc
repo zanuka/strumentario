@@ -1,0 +1,33 @@
+---
+description: Rules for Braintrust evals, golden traces, scaffolder, and repair loops
+globs: ["**/evals/**", "**/eval/**", "**/scaffold*/**", "**/repair*/**", "**/*braintrust*", "**/*golden*", "**/*scorer*"]
+alwaysApply: false
+---
+
+# Evals & Scaffold Rules
+
+## Evals (Braintrust and equivalents)
+
+- Golden datasets should live in the repo (or have a documented export path) so another engineer can run them.
+- Prefer scorers that catch real regressions: tool choice, schema validity, output shape, compile success.
+- Use custom scorers when autoevals are not enough; keep scorer logic reviewable.
+- Every meaningful change to tool behavior or scaffold output should consider whether an eval case needs to be added or updated.
+- Checked-in experiment summaries in `docs/` are part of the product narrative, not optional notes.
+
+## Scaffolding
+
+- Scaffold from an explicit schema or resource, not from ad-hoc prompts alone.
+- Output should be typed, reviewable, and preferably compilable (or structured enough that compile/structure checks are meaningful).
+- Prefer narrow, useful scaffolds (typed client, page stub, studio stub) over generating an entire application.
+- Scaffold tools exposed over MCP should share contracts with the CLI scaffold path.
+
+## Repair loops
+
+- A repair loop needs a clear feedback signal (compile error, test failure, schema mismatch) and a bounded patch step.
+- Do not invent open-ended “keep fixing forever” loops without stop conditions.
+- Eval coverage for “output compiles / matches golden structure” is more valuable than aspirational multi-step agent autonomy.
+
+## Quality bar
+
+- Headless tools + evals come before polished UI.
+- If a scaffold or tool change cannot be described in an eval or a short postmortem, reconsider whether it belongs in the current phase.

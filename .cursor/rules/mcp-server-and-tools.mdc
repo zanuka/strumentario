@@ -1,0 +1,37 @@
+---
+description: Rules for MCP server, tools, resources, prompts, and transport
+globs: ["**/server/**", "**/mcp/**", "**/tools/**", "**/resources/**", "**/prompts/**", "**/*tool*", "**/*transport*", "**/*schema*"]
+alwaysApply: false
+---
+
+# MCP Server & Tools Rules
+
+## Protocol-first design
+
+- The MCP tool / resource / prompt surface is the contract. Any React widget or AI SDK path must call the same capabilities, not a parallel private API.
+- Prefer Streamable HTTP for the remote server path; keep stdio support only if it remains a thin adapter, not a second implementation.
+- Document tools clearly (name, description, input schema) so agent hosts and Inspector can use them without tribal knowledge.
+
+## Tools
+
+- Start with a small set of high-signal tools (query, mutate, validate, scaffold) rather than a large noisy catalog.
+- Tool inputs and outputs should be typed and schema-validated.
+- Side-effecting tools (mutate, scaffold) should be explicit and safe by default; prefer dry-run or preview where it helps.
+- Do not hide critical behavior in free-form prompt strings that agents must reverse-engineer.
+
+## Resources & prompts
+
+- Resources expose durable, readable context (schemas, examples, status) that agents can fetch by URI.
+- Prompts are reusable templates for common workflows (e.g. “validate then scaffold”); keep them short and role-clear.
+- Prefer resources for data and tools for actions.
+
+## Transport & hosting
+
+- Local-first: the server must be runnable without a proprietary cloud control plane.
+- Auth for early remote demos can be simple (shared token / env); do not block Phase 1 on multi-tenant perfection.
+- Config snippets for Cursor, Claude Code, and similar hosts belong in the README and should stay in sync with actual tool names.
+
+## Compatibility
+
+- Tools must remain usable from agent hosts even when the React MCP app or AI SDK UI is not running.
+- Avoid host-specific APIs inside the core server; keep ChatGPT Apps / MCP Apps concerns in the widget layer.

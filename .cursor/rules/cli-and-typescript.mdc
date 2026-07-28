@@ -1,0 +1,39 @@
+---
+description: TypeScript CLI conventions for Strumentario
+globs: ["**/*.{ts,tsx,js,mjs,cjs}", "package.json", "tsconfig*.json"]
+alwaysApply: false
+---
+
+# CLI & TypeScript Conventions
+
+## CLI design
+
+- Commands should be composable and predictable (`init`, `scaffold`, `serve`, `mcp`, `eval`, `doctor`, etc.)
+- Support both interactive and non-interactive / CI-friendly usage
+- Prefer explicit flags over hidden behavior
+- Include `--dry-run` for any command that mutates the workspace, writes files, or talks to external systems
+- Help text should be concise and show the happy path first
+- Prefer idempotent behavior where practical: re-running scaffold should not thrash careful user edits without intent
+
+## TypeScript
+
+- Strict mode preferred
+- Prefer interfaces / types that model the domain clearly (ToolDefinition, Resource, Prompt, Schema, ScaffoldResult, EvalCase, etc.)
+- Avoid deep inheritance; favor composition
+- Keep modules focused — one primary responsibility per file when practical
+- Public CLI and MCP tool surface should be stable; internal modules can evolve faster
+- Prefer shared types between server tools and any client/scaffold output so contracts stay aligned
+
+## Error handling
+
+- Fail fast with clear messages
+- Tell the user the next concrete action when possible
+- Distinguish between user error (bad schema, missing config) and system error
+- Never swallow tool or transport errors silently
+
+## Testing mindset
+
+- Core tool handlers, schema validation, and scaffold transforms should be unit-testable
+- Prefer pure functions for schema → artifact transformation where possible
+- CLI integration tests can come later; focus on domain logic and tool contracts first
+- Eval cases are part of the quality bar, not an afterthought

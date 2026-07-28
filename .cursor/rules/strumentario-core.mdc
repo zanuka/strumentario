@@ -1,0 +1,50 @@
+---
+description: Core project rules for Strumentario — MCP content toolkit
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Strumentario Core Rules
+
+You are working on **Strumentario**, an open-source MCP content toolkit. It provides a remote MCP server, React MCP app surfaces, schema-driven scaffolds, AI SDK product paths, and Braintrust evals so agents and humans share one coherent instrument set.
+
+Strumentario complements Nocciolo (durable knowledge / company brain) and Maglio (factory scaffold). Nocciolo supplies context; Maglio shapes production systems; Strumentario provides the MCP instrument layer.
+
+## Non-negotiable principles
+
+- **Protocol first, product second** — MCP tools, resources, and prompts are the source of truth; UIs and scaffolds are views over them
+- Keep designs **local-first** and self-hostable; no forced cloud runtime for the core server loop
+- Prefer **measurable** changes: tool or scaffold behavior that matters should be visible in an eval
+- Amplify existing engineering practices (TypeScript architecture, tests, reviews) — do not replace them
+- Support **progressive** delivery: remote server + Inspector first, then surfaces and repair loops
+- CLI is a primary interface; keep it fast, predictable, and CI-friendly
+
+## Architecture boundaries
+
+Keep these concerns separated:
+
+1. MCP server (tools, resources, prompts, transport)
+2. Schema / domain model that tools operate on
+3. Surfaces (React MCP app widget, AI SDK web path)
+4. Scaffold + repair loop (schema → artifacts → feedback)
+5. Evals (Braintrust golden traces, scorers, compile checks)
+6. Agent wiring (config snippets, skills, slash commands)
+
+Do not collapse server, UI, and evals into a single opaque package.
+
+## Working style
+
+- Prefer small, focused changes that complete a vertical slice
+- Update `ROADMAP.md` status when a phase item is completed or significantly changed
+- When adding user-facing commands, support `--dry-run` where it makes sense
+- Errors must be actionable
+- Strong TypeScript typing; avoid `any`
+- Tools must remain callable headless (without the React or AI SDK surface)
+
+## What to avoid
+
+- Inventing architecture that contradicts protocol-first or local-control principles
+- Expanding into multi-tenant auth perfection, full CMS parity, or a plugin marketplace before v1
+- Making cloud services the default path for the core MCP server
+- Changing tool contracts without considering eval coverage
+- Treating the React widget or AI SDK UI as the source of truth instead of the MCP surface
