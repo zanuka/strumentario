@@ -2,7 +2,7 @@
 
 **The instrumentarium for agentic MCP servers.**
 
-Strumentario (Italian for *instrumentarium* / set of instruments) — a local-first MCP content toolkit that turns schemas, tools, and constraints into production-ready remote MCP servers, React surfaces, and agentic scaffolds.
+Strumentario (Italian for *instrumentarium* / set of instruments) — a local-first MCP content toolkit that turns schemas, tools, and constraints into production-ready remote MCP servers, web surfaces, and agentic scaffolds.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Status: Early](https://img.shields.io/badge/Status-Early%20%2F%20Public-orange)]()
@@ -14,7 +14,7 @@ Strumentario (Italian for *instrumentarium* / set of instruments) — a local-fi
 Give developers a single, declarative toolkit to:
 
 - stand up a **remote MCP server** (Streamable HTTP) with real tools, resources, and prompts
-- expose the same capabilities through a **React MCP app widget** (ChatGPT Apps / MCP Apps path)
+- expose the same capabilities through an **MCP app widget** (ChatGPT Apps / MCP Apps path) across common web frameworks
 - **scaffold** typed clients, pages, or studio stubs from a schema
 - call the same tools from a **Vercel AI SDK / Anthropic** product surface
 - measure quality with **Braintrust** golden traces and scaffold compile checks
@@ -42,7 +42,7 @@ Strumentario is the **MCP content toolkit**.
 It starts from a schema (or a small set of domain resources) and produces:
 
 1. A remote MCP server with query, mutate, validate, and scaffold endpoints
-2. A React MCP app widget that can be embedded in ChatGPT Apps (and similar hosts)
+2. An MCP app widget (React and other web frameworks) that can be embedded in ChatGPT Apps (and similar hosts)
 3. A CLI / skill pack that scaffolds a minimal app or studio from the same schema
 4. A thin product path using the Vercel AI SDK (or Anthropic) that calls the identical tools
 5. A Braintrust suite with golden tool traces and compile/structure checks
@@ -55,7 +55,7 @@ Everything stays local-first and standards-first. You own the data, the hosting,
 | Layer | Capability |
 |-------|------------|
 | **Server** | Streamable HTTP MCP server — tools, resources, prompts; Inspector-ready |
-| **Surfaces** | React MCP app widget (ChatGPT Apps path) + optional AI SDK web UI |
+| **Surfaces** | MCP app widget for ChatGPT Apps / MCP Apps (React and other web frameworks) + optional AI SDK web UI |
 | **Scaffold** | Schema → typed client / page / studio stub + repair loop |
 | **Evals** | Braintrust golden traces, tool-choice scorers, scaffold compile checks |
 | **Agent wiring** | Config snippets + skills / slash commands so Cursor, Claude Code, and peers can use the same instruments |
@@ -90,7 +90,7 @@ The CLI and packages are under active development. Goal: a working remote server
 - **Local control** — self-hostable, version-controlled, no forced cloud runtime for the core loop
 - **Measurable** — every meaningful change to tools or scaffolds should be visible in an eval run
 - **Traditional craft + agents** — clear TypeScript architecture, tests, and reviews remain the baseline; agentic scaffolding amplifies that craft
-- **Progressive** — start with a single remote server and Inspector; grow into React widgets, AI SDK paths, and repair loops only when the foundation is solid
+- **Progressive** — start with a single remote server and Inspector; grow into MCP app widgets, AI SDK paths, and repair loops only when the foundation is solid
 - **Complement, don’t compete** — designed to sit next to Nocciolo (knowledge) and Maglio (factory); not a replacement for either
 
 ## Status

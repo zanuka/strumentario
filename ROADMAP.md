@@ -46,7 +46,7 @@ Primary goal for v1.0: developers and contributors can clone or connect the repo
 
 Pick A, B, or both (both is ideal):
 
-- [ ] **A:** React MCP app (ChatGPT Apps / MCP Apps bridge) on the same tools
+- [ ] **A:** MCP app widget (ChatGPT Apps / MCP Apps bridge) on the same tools — React first, with room for other web frameworks
 - [ ] **B:** Small web UI using Vercel AI SDK or Anthropic/OpenAI that calls the same backend capabilities
 - [ ] Demo GIF or short Loom in README; tools still work headless without the UI
 - [ ] Tag `v0.3.0` — “protocol + product UI”
@@ -130,7 +130,7 @@ Minimum credible triad for most applications: **MCP server → Braintrust → MC
 ## Demo goals (what a reviewer should be able to say)
 
 - “Built and deployed a remote MCP server (Streamable HTTP) with real tools; used from Cursor / Claude Code.”
-- “MCP App (React) for ChatGPT via Apps SDK / MCP Apps bridge.”
+- “MCP App for ChatGPT via Apps SDK / MCP Apps bridge (React and other web frameworks).”
 - “Braintrust evals for tool selection / scaffold quality; caught a real regression.”
 - “Shipped a feature with Vercel AI SDK / Anthropic in a public demo that shares the same tools.”
 
@@ -141,11 +141,11 @@ Minimum credible triad for most applications: **MCP server → Braintrust → MC
 - MCP TypeScript SDK: [modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) · first-server guide
 - Braintrust: [Run evaluations](https://www.braintrust.dev/docs/evaluate/run-evaluations) · `autoevals`
 - ChatGPT Apps / MCP Apps: [Apps SDK quickstart](https://developers.openai.com/apps-sdk/quickstart) · build MCP server for Apps
-- Vercel AI SDK (streamText, tools, React)
+- Vercel AI SDK (streamText, tools; React and other web frameworks)
 - Sanity official MCP server + Agent Toolkit posts (reference architecture only)
 
 ---
 
 ## Out of scope for primary effort
 
-Do not spend primary study time on: basic React/TypeScript, general Cursor/Claude Code proficiency, writing AGENTS.md/rules/skills in the abstract, configuring third-party MCP servers, or explaining why hooks/quality gates matter. Deepen those only when a gap in the phases above requires it (e.g. skills as the interface to *this* scaffolder).
+Do not spend primary study time on: basic web framework/TypeScript fluency, general Cursor/Claude Code proficiency, writing AGENTS.md/rules/skills in the abstract, configuring third-party MCP servers, or explaining why hooks/quality gates matter. Deepen those only when a gap in the phases above requires it (e.g. skills as the interface to *this* scaffolder).
