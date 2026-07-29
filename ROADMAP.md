@@ -49,12 +49,11 @@ These are not optional polish. They gate how we implement each phase.
 
 ## Phase 0 — Repo foundation
 
-- [ ] Create public repo with clear problem statement, audience, and differentiation thesis (README “How Strumentario differs”)
+- [x] Create public repo with clear problem statement, audience, and differentiation thesis (README “How Strumentario differs”)
+- [x] License (MIT), CONTRIBUTING stub, `.env.example` (no secrets)
+- [x] AGENTS.md / Cursor rules / Claude skills that mirror how agents should work on this codebase
 - [ ] TypeScript monorepo or simple packages: `server`, `evals`, optional `app` / `widget` / `cli`
-- [ ] License (MIT), CONTRIBUTING stub, `.env.example` (no secrets)
-- [ ] AGENTS.md / Cursor rules / Claude skills that mirror how agents should work on this codebase
 - [ ] CI: typecheck + unit tests on PR; evals gated or nightly if keys required
-- [ ] README problem → vision → positioning → quick-start skeleton
 - [ ] Short landscape paragraph in README (expand to `docs/landscape.md` when experiments exist)
 
 **Exit criteria:** cold clone + `npm i` + typecheck succeeds; no secrets in tree; a cold reader can tell why this is not “another MCP framework.”
