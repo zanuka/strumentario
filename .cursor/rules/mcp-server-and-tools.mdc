@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## Protocol-first design
 
-- The MCP tool / resource / prompt surface is the contract. Any React widget or AI SDK path must call the same capabilities, not a parallel private API.
+- The MCP tool / resource / prompt surface is the contract. Any MCP App widget or AI SDK path must call the same capabilities, not a parallel private API.
 - Prefer Streamable HTTP for the remote server path; keep stdio support only if it remains a thin adapter, not a second implementation.
 - Document tools clearly (name, description, input schema) so agent hosts and Inspector can use them without tribal knowledge.
 
@@ -33,5 +33,5 @@ alwaysApply: false
 
 ## Compatibility
 
-- Tools must remain usable from agent hosts even when the React MCP app or AI SDK UI is not running.
+- Tools must remain usable from agent hosts even when an MCP App widget or AI SDK UI is not running.
 - Avoid host-specific APIs inside the core server; keep ChatGPT Apps / MCP Apps concerns in the widget layer.

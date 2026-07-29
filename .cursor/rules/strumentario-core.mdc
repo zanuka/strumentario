@@ -6,7 +6,7 @@ alwaysApply: true
 
 # Strumentario Core Rules
 
-You are working on **Strumentario**, an open-source MCP content toolkit. It provides a remote MCP server, React MCP app surfaces, schema-driven scaffolds, AI SDK product paths, and Braintrust evals so agents and humans share one coherent instrument set.
+You are working on **Strumentario**, an open-source MCP content toolkit. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — measurable with Braintrust — sitting between Nocciolo (knowledge) and Maglio (factories).
 
 Strumentario complements Nocciolo (durable knowledge / company brain) and Maglio (factory scaffold). Nocciolo supplies context; Maglio shapes production systems; Strumentario provides the MCP instrument layer.
 
@@ -14,9 +14,11 @@ Strumentario complements Nocciolo (durable knowledge / company brain) and Maglio
 
 - **Protocol first, product second** — MCP tools, resources, and prompts are the source of truth; UIs and scaffolds are views over them
 - Keep designs **local-first** and self-hostable; no forced cloud runtime for the core server loop
-- Prefer **measurable** changes: tool or scaffold behavior that matters should be visible in an eval
+- Prefer **measurable** changes: tool or scaffold behavior that matters should be visible in an eval; protect Phase 2 before rushing surfaces
+- Prefer a **high-signal** tool set (query / mutate / validate / scaffold) over a noisy catalog
+- Schema is the **single source of truth** that generates tools, resources, widget props, AI SDK defs, and scaffolds
 - Amplify existing engineering practices (TypeScript architecture, tests, reviews) — do not replace them
-- Support **progressive** delivery: remote server + Inspector first, then surfaces and repair loops
+- Support **progressive** delivery: remote server + Inspector first, then evals, then surfaces and repair loops
 - CLI is a primary interface; keep it fast, predictable, and CI-friendly
 
 ## Architecture boundaries
@@ -25,7 +27,7 @@ Keep these concerns separated:
 
 1. MCP server (tools, resources, prompts, transport)
 2. Schema / domain model that tools operate on
-3. Surfaces (React MCP app widget, AI SDK web path)
+3. Surfaces (MCP App widgets across major web frameworks, AI SDK web path)
 4. Scaffold + repair loop (schema → artifacts → feedback)
 5. Evals (Braintrust golden traces, scorers, compile checks)
 6. Agent wiring (config snippets, skills, slash commands)
@@ -39,7 +41,7 @@ Do not collapse server, UI, and evals into a single opaque package.
 - When adding user-facing commands, support `--dry-run` where it makes sense
 - Errors must be actionable
 - Strong TypeScript typing; avoid `any`
-- Tools must remain callable headless (without the React or AI SDK surface)
+- Tools must remain callable headless (without a widget or AI SDK surface)
 
 ## What to avoid
 
@@ -47,4 +49,6 @@ Do not collapse server, UI, and evals into a single opaque package.
 - Expanding into multi-tenant auth perfection, full CMS parity, or a plugin marketplace before v1
 - Making cloud services the default path for the core MCP server
 - Changing tool contracts without considering eval coverage
-- Treating the React widget or AI SDK UI as the source of truth instead of the MCP surface
+- Treating any MCP App widget or AI SDK UI as the source of truth instead of the MCP surface
+- Competing on decorator elegance or richest widget auto-discovery (peer territory)
+- Becoming an agent runtime or durable memory system (Nocciolo / Maglio)
