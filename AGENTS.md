@@ -103,3 +103,16 @@ We are building this in public as open source.
 ## Current Focus
 
 See `ROADMAP.md`. At the time of writing we are in early foundation (Phase 0 → Phase 1: remote MCP server + Inspector path). Protect the differentiation bets and phase gates documented there.
+
+<!-- nocciolo:hindsight-bank -->
+
+## Project memory bank (Hindsight)
+
+Prefer the project Hindsight bank `strumentario` for durable strumentario context (architecture, decisions, standards, domain invariants).
+
+- Recall via the Hindsight MCP tools (`recall`, `reflect`) before rediscovering the same facts from scattered docs.
+- MCP endpoint (single-bank): `http://localhost:8888/mcp/strumentario/`
+- Treat repo docs and ADRs as source of truth; use the bank as the agent-facing memory of those sources.
+- Do not dump secrets, credentials, or ephemeral chat into the bank.
+
+<!-- /nocciolo:hindsight-bank -->

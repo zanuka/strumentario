@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "name": "strumentario",
+  "provider": "hindsight",
+  "bankId": "strumentario",
+  "root": ".",
+  "createdAt": "2026-08-07T21:55:15.465Z",
+  "docker": {
+    "containerName": "suchconfig-hindsight",
+    "volumeName": "suchconfig-hindsight-data"
+  }
+}

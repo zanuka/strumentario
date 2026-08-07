@@ -1,0 +1,132 @@
+{
+  "version": "1",
+  "bank": {
+    "retain_mission": "This bank holds durable knowledge for the strumentario software project. Always extract: architectural decisions and trade-offs, coding standards and conventions, domain invariants, API design choices, tech stack facts, module boundaries, operational constraints, and explicit ADRs or decision records. Ignore: transient debugging output, one-off chat notes, generated lockfile noise, secrets/credentials, and ephemeral WIP comments.",
+    "retain_extraction_mode": "verbose",
+    "enable_observations": true,
+    "observations_mission": "Synthesize stable facts about strumentario: tech stack, architecture patterns, team conventions, domain vocabulary, and how the codebase is organized. Prefer long-lived project truths over session-specific details.",
+    "reflect_mission": "You are the durable project memory for strumentario. When reflecting, prefer established architecture, ADRs, coding standards, and domain invariants. Cite provenance when recalling decisions. Do not invent conventions that are not in the bank.",
+    "disposition_skepticism": 4,
+    "disposition_literalism": 4,
+    "disposition_empathy": 2,
+    "entities_allow_free_form": true,
+    "entity_labels": [
+      {
+        "key": "knowledge_kind",
+        "type": "value",
+        "values": [
+          {
+            "value": "decision"
+          },
+          {
+            "value": "standard"
+          },
+          {
+            "value": "architecture"
+          },
+          {
+            "value": "domain"
+          },
+          {
+            "value": "api"
+          },
+          {
+            "value": "ops"
+          }
+        ]
+      },
+      {
+        "key": "durability",
+        "type": "value",
+        "values": [
+          {
+            "value": "stable"
+          },
+          {
+            "value": "evolving"
+          },
+          {
+            "value": "deprecated"
+          }
+        ]
+      }
+    ]
+  },
+  "mental_models": [
+    {
+      "id": "project-context",
+      "name": "Project Context",
+      "source_query": "What is strumentario's purpose, tech stack, architecture, and key conventions? What are the main components and how do they fit together?",
+      "max_tokens": 2048,
+      "tags": [
+        "project"
+      ],
+      "trigger": {
+        "refresh_after_consolidation": true
+      }
+    },
+    {
+      "id": "architecture-decisions",
+      "name": "Architecture Decisions",
+      "source_query": "What architectural decisions have been made for strumentario, including trade-offs and rationale?",
+      "max_tokens": 2048,
+      "tags": [
+        "architecture",
+        "decisions"
+      ],
+      "trigger": {
+        "refresh_after_consolidation": true
+      }
+    },
+    {
+      "id": "coding-standards",
+      "name": "Coding Standards",
+      "source_query": "What coding standards, style rules, and engineering practices should agents follow in strumentario?",
+      "max_tokens": 1536,
+      "tags": [
+        "standards"
+      ],
+      "trigger": {
+        "refresh_after_consolidation": true
+      }
+    }
+  ],
+  "directives": [
+    {
+      "name": "prefer-durable-sources",
+      "content": "Prefer ADRs, architecture docs, standards, and AGENTS.md over chat history or ephemeral notes when answering project questions.",
+      "priority": 10,
+      "is_active": true,
+      "tags": [
+        "knowledge"
+      ]
+    },
+    {
+      "name": "cite-provenance",
+      "content": "When recalling a decision or standard, mention the source document or ADR if known.",
+      "priority": 8,
+      "is_active": true,
+      "tags": [
+        "knowledge"
+      ]
+    },
+    {
+      "name": "do-not-invent-conventions",
+      "content": "Do not invent coding conventions or architecture rules that are not present in the bank. If unsure, say so.",
+      "priority": 10,
+      "is_active": true,
+      "tags": [
+        "safety"
+      ]
+    },
+    {
+      "name": "local-first",
+      "content": "Assume local-first and self-hostable defaults unless the bank explicitly documents a cloud requirement.",
+      "priority": 5,
+      "is_active": true,
+      "tags": [
+        "principles"
+      ]
+    }
+  ]
+}

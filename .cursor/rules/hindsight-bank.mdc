@@ -1,0 +1,13 @@
+---
+description: Prefer the project Hindsight bank (strumentario) for durable context
+alwaysApply: true
+---
+
+# Hindsight bank — strumentario
+
+Use the project memory bank `strumentario` via Hindsight MCP when answering questions about architecture, decisions, coding standards, or domain rules.
+
+- Prefer `recall` / `reflect` on the project bank before re-deriving facts from README/ADRs alone.
+- MCP URL: `http://localhost:8888/mcp/strumentario/`
+- Docs and ADRs remain authoritative; the bank is how agents inherit them across sessions.
+- Never retain secrets or credentials into the bank.

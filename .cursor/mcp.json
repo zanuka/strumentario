@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "hindsight": {
+      "url": "http://localhost:8888/mcp/strumentario/",
+      "headers": {
+        "Authorization": "Bearer ${env:NOCCIOLO_HINDSIGHT_API_KEY}"
+      }
+    }
+  }
+}
