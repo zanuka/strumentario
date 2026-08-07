@@ -4,7 +4,7 @@ This file is the primary source of truth for any AI agent working on Strumentari
 
 ## Project Identity
 
-Strumentario is the local-first **MCP content toolkit**. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Nocciolo) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
+Strumentario is a local-first **MCP content toolkit**. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Nocciolo) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
 
 We are building this in public as open source.
 
