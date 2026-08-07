@@ -6,6 +6,8 @@ Primary goal for v1.0: developers and contributors can clone or connect the repo
 
 **Positioning:** Strumentario is the local-first MCP content toolkit. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Nocciolo) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
 
+It treats MCP as a **durable content instrument layer** instead of another one-off tool adapter. Most options today solve the “make a server run” problem. Strumentario aims at the harder, more common problem: standing up a coherent, measurable, multi-surface set of instruments that agents and humans can actually share—and keeping that set under the developer’s control.
+
 Without deliberate sharpening, external readers will fill the gap themselves and read this as “mcp-use but smaller / later” or “yet another TypeScript server scaffolder.” The phases below exist to make the eval-first, content-primitive, multi-surface-from-schema, and knowledge↔instruments↔factory story *obvious*.
 
 ---
@@ -18,32 +20,49 @@ These are not optional polish. They gate how we implement each phase.
 2. **Schema as single source of truth** — Schema generates typed tool handlers, resource definitions, widget prop schemas, AI SDK tool definitions, and scaffold templates. Document the generation story early; do not hand-fork three divergent surfaces.
 3. **Own the content-domain language** — query / mutate / validate / scaffold are the product. Resist a large catalog of miscellaneous Phase 1 demos.
 4. **AI SDK path is equal, not secondary** — Prefer shipping both MCP App widgets (major web frameworks) and AI SDK product path; if sequencing forces a choice, keep the other as an explicit first-class stub with the same tool contracts.
-5. **Landscape honesty** — Acknowledge mcp-use, MCP Framework / mcpkit-style, FastMCP, and official MCP Apps kits early so readers do not invent our positioning for us. Opinions stay tied to experiments.
+5. **Landscape honesty** — Acknowledge official SDKs + stdio examples, mcp-use, MCP Framework / mcpkit-style, FastMCP, official MCP Apps kits, and generation tools early so readers do not invent our positioning for us. Opinions stay tied to experiments.
 6. **Nocciolo / Maglio seams stay explicit** — Document handoffs even before deep integration: Nocciolo seeds durable context instruments recall against; Maglio factories call Strumentario tools overnight.
 7. **Postmortems and architecture notes are product** — Hiring and contributor gold; not leftover docs.
 
+### Where other options leave developers
+
+| Approach | What it optimizes for | Typical developer friction |
+|----------|-----------------------|----------------------------|
+| **Official SDKs + stdio examples** | Protocol compliance | Heavy plumbing; remote/multi-client rarely ships; no product surfaces or evals |
+| **mcp-use** | Server + React MCP App widgets + scaffolder | Excellent DX for widgets and remote transport; thinner on content primitives, AI SDK as equal, eval-first measurability; cloud path available |
+| **MCP Framework / mcpkit-style** | Boilerplate reduction, discovery, multi-transport, auth | Strong server scaffolding; stops at “good tools”; little on widgets, scaffolds-as-capabilities, or golden-trace evals |
+| **FastMCP (Python)** | Decorator DX and rapid tool servers | Great for Python tool servers; weak on React/TS product surfaces and the content-toolkit story |
+| **Official MCP Apps kits** | Interactive UI resources / widgets | Strong on the widget layer; thinner on the full server + eval + scaffold loop |
+| **Generation tools (e.g. mcp-anything)** | Auto-generate servers from APIs/code/NL | Fast start; weaker on ongoing ownership, local control, and measurable iteration |
+
+Common outcome without a content-toolkit layer: developers still rebuild query / mutate / validate / list patterns per domain, ship fragile adapters, and have no reliable way to know whether a tool or scaffold change actually improved quality. Phases below exist to close that gap.
+
 ### Overlap map (honest)
 
-| Capability | mcp-use | MCP Framework / mcpkit-style | FastMCP | Official MCP Apps kits | **Strumentario** |
-|------------|---------|------------------------------|---------|------------------------|------------------|
-| Remote multi-client (Streamable HTTP) | Strong | Strong | Strong | Secondary | **Primary (Phase 1)** |
-| MCP App widgets (major web frameworks) | **Excellent** (React auto-register) | Weak / none | None | **Core focus** (React) | Phase 3A (React first, then peers) |
-| Zero-boilerplate tool definition | Strong | Strong | Strong | N/A | Moderate (schema-driven) |
-| CLI scaffolder | Strong | Strong | Moderate | Moderate | Phase 4 |
-| AI SDK / product web path | Secondary | Weak | Weak | Weak | **Equal citizen (Phase 3B)** |
-| Evals as product (Braintrust, golden traces, tool-choice scorers) | Afterthought | Rare | Rare | Rare | **Phase 2, non-negotiable** |
-| Scaffold + repair loop with compile/structure checks | Limited | Limited | Limited | Limited | **Phase 4** |
-| Local-first (no cloud required for core loop) | Soft (has Manufact path) | Yes | Yes | Yes | **Hard principle** |
-| Content-domain primitives (query/mutate/validate/scaffold) | Generic tools | Generic tools | Generic | N/A | **Explicit high-signal set** |
-| Knowledge ↔ instruments ↔ factory story | Standalone | Standalone | Standalone | Standalone | **Nocciolo + Maglio alignment** |
-| Architecture notes + failure postmortems as artifacts | Rare | Rare | Rare | Rare | **Phase 5, hiring/demo** |
+| Capability | Official SDKs / stdio | mcp-use | MCP Framework / mcpkit-style | FastMCP | Official MCP Apps kits | Generation tools | **Strumentario** |
+|------------|----------------------|---------|------------------------------|---------|------------------------|------------------|------------------|
+| Remote multi-client (Streamable HTTP) | Rare / DIY | Strong | Strong | Strong | Secondary | Varies | **Primary (Phase 1)** |
+| MCP App widgets (major web frameworks) | None | **Excellent** (React auto-register) | Weak / none | None | **Core focus** (React) | Rare | Phase 3A (React first, then peers) |
+| Zero-boilerplate tool definition | Low | Strong | Strong | Strong | N/A | High (generated) | Moderate (schema-driven) |
+| CLI scaffolder | None | Strong | Strong | Moderate | Moderate | Strong (one-shot) | Phase 4 |
+| AI SDK / product web path | None | Secondary | Weak | Weak | Weak | Rare | **Equal citizen (Phase 3B)** |
+| Evals as product (Braintrust, golden traces, tool-choice scorers) | None | Afterthought | Rare | Rare | Rare | Rare | **Phase 2, non-negotiable** |
+| Scaffold + repair loop with compile/structure checks | None | Limited | Limited | Limited | Limited | Limited | **Phase 4** |
+| Local-first (no cloud required for core loop) | Yes | Soft (has Manufact path) | Yes | Yes | Yes | Soft / mixed | **Hard principle** |
+| Content-domain primitives (query/mutate/validate/scaffold) | DIY | Generic tools | Generic tools | Generic | N/A | Ad-hoc generated | **Explicit high-signal set** |
+| Ongoing ownership / measurable iteration | DIY | Moderate | Moderate | Moderate | Widget-focused | Weak after generate | **Core product loop** |
+| Knowledge ↔ instruments ↔ factory story | Standalone | Standalone | Standalone | Standalone | Standalone | Standalone | **Nocciolo + Maglio alignment** |
+| Architecture notes + failure postmortems as artifacts | Rare | Rare | Rare | Rare | Rare | Rare | **Phase 5, hiring/demo** |
 
 ### What not to chase for differentiation
 
 - Pure boilerplate reduction or decorator elegance → mcpkit / MCP Framework / FastMCP
 - Richest React widget runtime or auto-discovery magic → mcp-use and official Apps kits
+- Fastest one-shot server generation from APIs/NL → generation tools (e.g. mcp-anything)
 - Multi-tenant auth perfection, plugin marketplaces, full CMS parity → already non-goals
 - Becoming “the” agent runtime or memory system → Nocciolo / Maglio territory
+
+**Bottom line for phase gating:** other projects mostly help you *build an MCP server* (or widgets on top of one). Each phase should advance *ownership of a durable, measurable instrument set*—same tools agents and humans share—under local control.
 
 ---
 
@@ -54,9 +73,9 @@ These are not optional polish. They gate how we implement each phase.
 - [x] AGENTS.md / Cursor rules / Claude skills that mirror how agents should work on this codebase
 - [ ] TypeScript monorepo or simple packages: `server`, `evals`, optional `app` / `widget` / `cli`
 - [ ] CI: typecheck + unit tests on PR; evals gated or nightly if keys required
-- [ ] Short landscape paragraph in README (expand to `docs/landscape.md` when experiments exist)
+- [x] Landscape comparison in README (friction table + how the toolkit helps; expand to `docs/landscape.md` when experiments exist)
 
-**Exit criteria:** cold clone + `npm i` + typecheck succeeds; no secrets in tree; a cold reader can tell why this is not “another MCP framework.”
+**Exit criteria:** cold clone + `npm i` + typecheck succeeds; no secrets in tree; a cold reader can tell why this is not “another MCP framework,” and that the bet is durable measurable instruments—not “make a server run.”
 
 ---
 
@@ -149,6 +168,7 @@ Prefer **both**. A and B are equal citizens over the same schema-generated tool 
 - MCP app UI **and** AI SDK product path as equal citizens where feasible (minimum: one shipped, the other stubbed with shared contracts)
 - Schema documented as the generator of server tools + surfaces + evals
 - Written artifacts that double as project talking points (architecture + postmortems + landscape)
+- A reviewer can articulate practical outcomes: same tools across hosts and surfaces without drift; measurable tool/scaffold changes; local ownership of the core instruments; a growth path to repair loops and knowledge/factory seams without rewriting the foundation
 
 ---
 
@@ -161,7 +181,7 @@ Do **not** block the first public tags on:
 - Polished marketing site
 - Large plugin marketplace
 - Event-driven multi-repo orchestration (that belongs later or in Maglio)
-- Out-competing mcp-use on widget auto-discovery or mcpkit / FastMCP on decorator elegance
+- Out-competing mcp-use on widget auto-discovery, mcpkit / FastMCP on decorator elegance, or generation tools on one-shot API→server speed
 - Becoming an agent runtime or durable memory system (Nocciolo / Maglio)
 
 Depth on MCP + evals + coherent multi-surface content instruments beats breadth.
@@ -191,6 +211,7 @@ Minimum credible triad for most applications: **MCP server → Braintrust → MC
 - “Scaffold + repair loop with compile/structure checks; agents build, not only query.”
 - “Clear handoff story: Nocciolo (knowledge) → Strumentario (instruments) → Maglio (factories).”
 - “Architecture + postmortems + landscape note make the craft and the differentiation obvious.”
+- “This is not another adapter—I own a durable, measurable instrument set under local control, shared by agents and humans.”
 
 ---
 
@@ -201,7 +222,7 @@ Minimum credible triad for most applications: **MCP server → Braintrust → MC
 - ChatGPT Apps / MCP Apps: [Apps SDK quickstart](https://developers.openai.com/apps-sdk/quickstart) · build MCP server for Apps
 - Vercel AI SDK (streamText, tools; React and other web frameworks)
 - Sanity official MCP server + Agent Toolkit posts (reference architecture only)
-- Landscape peers (acknowledge, don’t clone): mcp-use, MCP Framework / mcpkit-style, FastMCP, official MCP Apps kits
+- Landscape peers (acknowledge, don’t clone): official SDKs + stdio examples, mcp-use, MCP Framework / mcpkit-style, FastMCP, official MCP Apps kits, generation tools (e.g. mcp-anything)
 
 ---
 
