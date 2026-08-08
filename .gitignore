@@ -56,6 +56,11 @@ Desktop.ini
 .strumentario/runs/
 *.server-state.json
 
+# Nocciolo local / generated state
+.nocciolo/local/
+.nocciolo/cache/
+*.bank-state.json
+
 # Temporary
 tmp/
 temp/
