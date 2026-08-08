@@ -4,7 +4,7 @@ Strumentario treats evals as product, not afterthought. Braintrust is the Phase 
 
 This document is the high-level strategy. Concrete suite layout, run commands, and experiment summaries land with Phase 2 implementation (see [ROADMAP.md](../ROADMAP.md) Phase 2).
 
-![Evals as product — Phase 2 gate](images/strumentario-evals-diagram.png)
+![Evals as product — Phase 2 gate](../images/strumentario-evals-diagram.png)
 
 *Golden cases → measurable tool & scaffold quality. See [braintrust-eval-details.md](braintrust-eval-details.md).*
 
