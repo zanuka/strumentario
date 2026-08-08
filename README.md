@@ -58,9 +58,7 @@ Common outcome: developers still rebuild query / mutate / validate / list patter
 
 ## The Vision
 
-Strumentario is the **MCP content toolkit**.
-
-It starts from a schema (or a small set of domain resources) and produces:
+Strumentario starts from a schema (or a small set of domain resources) and produces:
 
 1. A remote MCP server with **query, mutate, validate, and scaffold** as the product surface (not a grab-bag of demos)
 2. An MCP app widget across major web frameworks (React, Vue, Svelte, and peers) that can be embedded in ChatGPT Apps (and similar hosts)
