@@ -20,7 +20,7 @@ Give developers a single, declarative toolkit to:
 - stand up a **remote MCP server** (Streamable HTTP) with real tools, resources, and prompts
 - expose the same capabilities through an **MCP app widget** (ChatGPT Apps / MCP Apps path) across common web frameworks
 - **scaffold** typed clients, pages, or studio stubs from a schema
-- call the same tools from a **Vercel AI SDK / Anthropic** product surface
+- call the same tools from an **AI SDK product surface** (Vercel AI SDK, OpenAI, Anthropic, and peers)
 - measure quality with **Braintrust** golden traces and scaffold compile checks
 
 Agents and humans share one coherent instrument set instead of reinventing the wiring every time.
@@ -63,7 +63,7 @@ Strumentario starts from a schema (or a small set of domain resources) and produ
 1. A remote MCP server with **query, mutate, validate, and scaffold** as the product surface (not a grab-bag of demos)
 2. An MCP app widget across major web frameworks (React, Vue, Svelte, and peers) that can be embedded in ChatGPT Apps (and similar hosts)
 3. A CLI / skill pack that scaffolds a minimal app or studio from the same schema
-4. A first-class product path using the Vercel AI SDK (or Anthropic) that calls the identical tools
+4. A first-class product path using common AI SDKs (Vercel AI SDK, OpenAI, Anthropic, and peers) that calls the identical tools
 5. A Braintrust suite with golden tool traces and compile/structure checks
 6. Architecture notes, eval summaries, and failure postmortems that double as interview artifacts
 
@@ -91,7 +91,7 @@ The MCP landscape already has strong remote servers (MCP Framework, FastMCP), ex
 
 2. **Content primitives instead of “any tool”** — Productizes a small, high-signal set—query, mutate, validate, scaffold—rather than encouraging a large catalog of ad-hoc tools. These are the patterns content and knowledge domains keep re-implementing. Developers get a coherent instrument set instead of rediscovering the same shapes every project.
 
-3. **One declarative core → multiple coherent surfaces** — A schema (or small set of domain resources) drives a remote Streamable HTTP MCP server (Inspector-ready, multi-client), MCP App widgets across major web frameworks, a thin Vercel AI SDK / Anthropic product path that calls the *same* tools, and CLI / skill scaffolding of typed clients, pages, or studio stubs. Protocol stays the source of truth; UIs and product code are views over it. Headless agents and human surfaces stay aligned.
+3. **One declarative core → multiple coherent surfaces** — A schema (or small set of domain resources) drives a remote Streamable HTTP MCP server (Inspector-ready, multi-client), MCP App widgets across major web frameworks, a thin AI SDK product path (Vercel AI SDK, OpenAI, Anthropic, and peers) that calls the *same* tools, and CLI / skill scaffolding of typed clients, pages, or studio stubs. Protocol stays the source of truth; UIs and product code are views over it. Headless agents and human surfaces stay aligned.
 
 4. **Measurability built in (Braintrust golden traces)** — Evals are not an optional later stage. Golden traces / datasets + tool-choice scorers + scaffold compile/structure checks make changes visible. Developers can answer “did this tool or scaffold change improve quality?” instead of relying on vibes or manual inspection.
 
