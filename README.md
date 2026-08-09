@@ -163,7 +163,13 @@ The CLI and packages are under active development. Goal: a working remote server
 
 ## Status
 
-Strumentario is in the earliest public stage. We are building in the open.
+Strumentario is in the earliest public stage. We are building in the open. The TypeScript monorepo foundation is in place (`packages/server`, `packages/evals`); Phase 1 is the Streamable HTTP MCP server.
+
+```bash
+pnpm install
+pnpm typecheck
+pnpm test
+```
 
 See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/nocciolo-brain-details.md](./docs/nocciolo-brain-details.md) for the Nocciolo / Hindsight project memory bank (`.nocciolo/`, MCP recall).
 

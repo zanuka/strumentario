@@ -71,11 +71,11 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 - [x] Create public repo with clear problem statement, audience, and differentiation thesis (README “How Strumentario differs”)
 - [x] License (MIT), CONTRIBUTING stub, `.env.example` (no secrets)
 - [x] AGENTS.md / Cursor rules / Claude skills that mirror how agents should work on this codebase
-- [ ] TypeScript monorepo or simple packages: `server`, `evals`, optional `app` / `widget` / `cli`
-- [ ] CI: typecheck + unit tests on PR; evals gated or nightly if keys required
+- [x] TypeScript monorepo or simple packages: `server`, `evals`, optional `app` / `widget` / `cli`
+- [x] CI: typecheck + unit tests on PR; evals gated or nightly if keys required
 - [x] Landscape comparison in README (friction table + how the toolkit helps; expand to `docs/landscape.md` when experiments exist)
 
-**Exit criteria:** cold clone + `npm i` + typecheck succeeds; no secrets in tree; a cold reader can tell why this is not “another MCP framework,” and that the bet is durable measurable instruments—not “make a server run.”
+**Exit criteria:** cold clone + `pnpm i` + typecheck succeeds; no secrets in tree; a cold reader can tell why this is not “another MCP framework,” and that the bet is durable measurable instruments—not “make a server run.”
 
 ---
 

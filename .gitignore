@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 .pnp
 .pnp.js
 
@@ -66,7 +67,7 @@ tmp/
 temp/
 *.tmp
 
-# Package manager lockfiles (uncomment the ones you do NOT want to commit)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
+# Prefer pnpm (packageManager in package.json)
+package-lock.json
+yarn.lock
+

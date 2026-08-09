@@ -23,13 +23,14 @@ Thanks for your interest. Strumentario is in the earliest public stage; the high
 ## Development
 
 ```bash
-# Once packages exist
-npm install
-npm run typecheck
-npm test
-# Eval suite (requires Braintrust keys)
-npm run eval
+pnpm install
+pnpm typecheck
+pnpm test
+# Eval suite (requires Braintrust keys; Phase 2)
+pnpm eval
 ```
+
+Packages live under `packages/` (`@strumentario/server`, `@strumentario/evals`). Optional `cli` / `widget` / `app` packages land in later phases. PR CI runs typecheck + unit tests; Braintrust evals are nightly / manual and skip when `BRAINTRUST_API_KEY` is unset.
 
 See [ROADMAP.md](./ROADMAP.md) for the current phase and definition of done.
 

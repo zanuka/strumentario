@@ -1,0 +1,32 @@
+{
+  "name": "strumentario",
+  "version": "0.0.1",
+  "author": "zanuka",
+  "private": true,
+  "description": "Local-first MCP content toolkit — one schema → shared instruments for agents and humans",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@10.11.0",
+  "scripts": {
+    "build": "pnpm -r --if-present run build",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "eval": "pnpm --filter @strumentario/server run build && pnpm --filter @strumentario/evals run eval",
+    "clean": "rm -rf packages/*/dist *.tsbuildinfo packages/*/*.tsbuildinfo"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}
