@@ -116,3 +116,10 @@ Prefer the project Hindsight bank `strumentario` for durable strumentario contex
 - Do not dump secrets, credentials, or ephemeral chat into the bank.
 
 <!-- /nocciolo:hindsight-bank -->
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.
