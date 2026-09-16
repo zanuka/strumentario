@@ -22,3 +22,12 @@ export function getServerPackageInfo(): ServerPackageInfo {
     primitives: CONTENT_PRIMITIVES,
   };
 }
+
+export { createMcpHttpServer, handleMcpHttpRequest, MCP_HTTP_PATH } from "./http.js";
+export { HANDBOOK_PAGE_SCHEMA_URI, handbookPageJsonSchema, handbookPageSchema } from "./schema.js";
+export { createMcpServer } from "./server.js";
+export type { HandbookPage } from "./schema.js";
+export {
+  validateHandbookPage,
+  type HandbookPageValidationResult,
+} from "./validate.js";

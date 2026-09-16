@@ -130,26 +130,22 @@ What we deliberately do **not** chase for differentiation: pure boilerplate redu
 
 Later phases grow multi-schema support, event-driven updates, and tighter Nocciolo/Maglio integration.
 
-## Quick Start (Coming Soon)
+## Quick Start
 
 ```bash
-# From your project root (or a fresh directory)
-npx @strumentario/cli init
-
-# Scaffold a minimal remote MCP server + schema
-strumentario scaffold --schema ./content-schema.ts
-
-# Run the server (Streamable HTTP)
-strumentario serve
-
-# Emit agent host config + MCP Inspector instructions
-strumentario mcp
-
-# Run the Braintrust eval suite (requires keys)
-strumentario eval
+pnpm install
+pnpm --filter @strumentario/server serve
 ```
 
-The CLI and packages are under active development. Goal: a working remote server + one surface + one eval path in under an hour once the foundation lands.
+This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp`. Set `PORT` to use a different local port.
+
+### MCP Inspector walkthrough
+
+1. Start the server with `pnpm --filter @strumentario/server serve`.
+2. In another terminal, run `npx @modelcontextprotocol/inspector` and open its local URL.
+3. Select **Streamable HTTP** as the transport.
+4. Enter `http://localhost:3001/mcp`, then connect and choose **List Tools** to see `validate`.
+5. Call `validate` with `{"instance":{"title":"Getting started","slug":"getting-started","body":"Draft content."}}` to confirm a valid draft.
 
 ## Core Principles
 
