@@ -20,6 +20,24 @@ export interface PageStore {
   get(slug: string): Promise<StoredPage | undefined>;
   list(): Promise<StoredPage[]>;
   put(page: HandbookPage): Promise<StoredPage>;
+  /** Removes a page. Resolves true when a page was deleted, false when none existed. */
+  delete(slug: string): Promise<boolean>;
+  /**
+   * Runs `fn` while holding the writer lock for `slug`, so a read-check-write
+   * sequence cannot interleave with another writer to the same slug.
+   */
+  withLock<T>(slug: string, fn: () => Promise<T>): Promise<T>;
+  /** Looks up a recorded idempotent outcome; `undefined` when the key is unused. */
+  getIdempotency(key: string): Promise<IdempotencyRecord | undefined>;
+  /** Records an outcome for `key`. Never overwrites an existing record. */
+  putIdempotency(key: string, record: IdempotencyRecord): Promise<void>;
+}
+
+/** The outcome of a write, kept so a replayed key returns it without writing again. */
+export interface IdempotencyRecord {
+  /** Fingerprint of the input that produced `result`. */
+  fingerprint: string;
+  result: Record<string, unknown>;
 }
 
 export class StoreError extends Error {
@@ -30,10 +48,19 @@ export function revisionOf(content: string | Uint8Array): string {
   return createHash("sha256").update(content).digest("hex").slice(0, 16);
 }
 
+/** Exact bytes a page is stored as; its hash is the page revision. */
+export function serializePage(page: HandbookPage): string {
+  return `${JSON.stringify(page, null, 2)}\n`;
+}
+
 export function resolveDataDir(env: NodeJS.ProcessEnv = process.env): string {
   const configured = env[DATA_DIR_ENV]?.trim();
   return path.resolve(configured ? configured : DEFAULT_DATA_DIR);
 }
+
+// Writer locks are process-wide and keyed by file path: the HTTP transport builds
+// a fresh server and store per request, so instance-level locks would not exclude.
+const writerQueues = new Map<string, Promise<unknown>>();
 
 function isNotFound(error: unknown): boolean {
   return (error as NodeJS.ErrnoException | undefined)?.code === "ENOENT";
@@ -108,7 +135,7 @@ export class FileSystemPageStore implements PageStore {
     }
 
     const value = parsed.data;
-    const content = `${JSON.stringify(value, null, 2)}\n`;
+    const content = serializePage(value);
     const target = this.fileFor(value.slug);
     const temp = path.join(this.dir, `.${value.slug}.${randomUUID()}.tmp`);
 
@@ -122,6 +149,66 @@ export class FileSystemPageStore implements PageStore {
     }
 
     return { ...value, revision: revisionOf(content) };
+  }
+
+  async delete(slug: string): Promise<boolean> {
+    if (!SLUG_PATTERN.test(slug)) {
+      return false;
+    }
+    try {
+      await rm(this.fileFor(slug));
+      return true;
+    } catch (error) {
+      if (isNotFound(error)) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  async withLock<T>(slug: string, fn: () => Promise<T>): Promise<T> {
+    const key = this.fileFor(slug);
+    const previous = writerQueues.get(key) ?? Promise.resolve();
+    const run = previous.then(fn, fn);
+    const tail = run.catch(() => undefined);
+    writerQueues.set(key, tail);
+    try {
+      return await run;
+    } finally {
+      if (writerQueues.get(key) === tail) {
+        writerQueues.delete(key);
+      }
+    }
+  }
+
+  private idempotencyFile(key: string): string {
+    return path.join(this.dir, ".idempotency", `${revisionOf(key)}.json`);
+  }
+
+  async getIdempotency(key: string): Promise<IdempotencyRecord | undefined> {
+    try {
+      const raw = await readFile(this.idempotencyFile(key), "utf8");
+      const entry = JSON.parse(raw) as { key: string } & IdempotencyRecord;
+      return entry.key === key ? { fingerprint: entry.fingerprint, result: entry.result } : undefined;
+    } catch (error) {
+      if (isNotFound(error)) {
+        return undefined;
+      }
+      throw error;
+    }
+  }
+
+  async putIdempotency(key: string, record: IdempotencyRecord): Promise<void> {
+    const file = this.idempotencyFile(key);
+    const temp = `${file}.${randomUUID()}.tmp`;
+    await mkdir(path.dirname(file), { recursive: true });
+    try {
+      await writeFile(temp, JSON.stringify({ key, ...record }), "utf8");
+      await rename(temp, file);
+    } catch (error) {
+      await rm(temp, { force: true });
+      throw error;
+    }
   }
 
   private parse(slug: string, raw: string): StoredPage {
