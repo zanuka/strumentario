@@ -8,5 +8,15 @@
   "docker": {
     "containerName": "suchconfig-hindsight",
     "volumeName": "suchconfig-hindsight-data"
+  },
+  "store": {
+    "allowlist": [
+      "AGENTS.md",
+      "README.md",
+      "docs/braintrust-eval-details.md",
+      "docs/nocciolo-brain-details.md",
+      "docs/server-transport-and-soak.md",
+      "docs/use-cases.md"
+    ]
   }
 }
