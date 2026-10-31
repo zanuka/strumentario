@@ -1,17 +1,28 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import {
   HANDBOOK_PAGE_SCHEMA_URI,
   handbookPageJsonSchema,
 } from "./schema.js";
+import { queryInputShape, queryOutputShape, queryPages } from "./query.js";
+import { FileSystemPageStore, type PageStore } from "./store.js";
 import { validateHandbookPage } from "./validate.js";
+
+export const PAGE_RESOURCE_TEMPLATE = "strumentario://pages/{slug}" as const;
+
+export interface CreateMcpServerOptions {
+  /** Defaults to a file store at STRUMENTARIO_DATA_DIR (./.strumentario/data). */
+  store?: PageStore;
+}
 
 const VALIDATE_OUTPUT_SCHEMA = {
   valid: z.boolean(),
   errors: z.array(z.string()),
 };
 
-export function createMcpServer(): McpServer {
+export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer {
+  const store = options.store ?? new FileSystemPageStore();
   const server = new McpServer({
     name: "strumentario",
     version: "0.0.1",
@@ -46,6 +57,69 @@ export function createMcpServer(): McpServer {
           },
         ],
         structuredContent,
+      };
+    },
+  );
+
+  server.registerTool(
+    "query",
+    {
+      title: "Query handbook pages",
+      description:
+        "Read handbook pages. Pass slug to get one page, or omit it to list pages (optional text filter and limit). Every page includes its revision. Read-only.",
+      inputSchema: queryInputShape,
+      outputSchema: queryOutputShape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input) => {
+      const structuredContent = await queryPages(store, input);
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(structuredContent) }],
+        structuredContent,
+        ...(structuredContent.ok ? {} : { isError: true }),
+      };
+    },
+  );
+
+  server.registerResource(
+    "handbook-page",
+    new ResourceTemplate(PAGE_RESOURCE_TEMPLATE, {
+      list: async () => ({
+        resources: (await store.list()).map((page) => ({
+          uri: `strumentario://pages/${page.slug}`,
+          name: page.slug,
+          title: page.title,
+          mimeType: "application/json",
+        })),
+      }),
+    }),
+    {
+      title: "Handbook page",
+      description: "A stored handbook page (with revision) by slug.",
+      mimeType: "application/json",
+    },
+    async (uri, variables) => {
+      const slug = String(variables["slug"]);
+      const result = await queryPages(store, { slug });
+      if (!result.ok || !result.page) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          result.error?.message ?? `Unable to read page "${slug}".`,
+        );
+      }
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            mimeType: "application/json",
+            text: JSON.stringify(result.page, null, 2),
+          },
+        ],
       };
     },
   );

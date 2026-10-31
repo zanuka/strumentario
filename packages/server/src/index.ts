@@ -31,3 +31,14 @@ export {
   validateHandbookPage,
   type HandbookPageValidationResult,
 } from "./validate.js";
+export { queryPages, type QueryInput, type QueryResult } from "./query.js";
+export {
+  DATA_DIR_ENV,
+  DEFAULT_DATA_DIR,
+  FileSystemPageStore,
+  resolveDataDir,
+  revisionOf,
+  StoreError,
+  type PageStore,
+  type StoredPage,
+} from "./store.js";
