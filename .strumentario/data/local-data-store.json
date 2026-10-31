@@ -1,0 +1,5 @@
+{
+  "title": "Local data store",
+  "slug": "local-data-store",
+  "body": "Pages are plain JSON files in STRUMENTARIO_DATA_DIR. Writes are atomic so concurrent readers never see a partial page."
+}

@@ -3,6 +3,8 @@ import { z } from "zod";
 export const HANDBOOK_PAGE_SCHEMA_URI =
   "strumentario://schemas/handbook-page" as const;
 
+export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export const handbookPageSchema = z
   .object({
     title: z
@@ -12,7 +14,7 @@ export const handbookPageSchema = z
     slug: z
       .string()
       .regex(
-        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+        SLUG_PATTERN,
         'must use lowercase letters, numbers, and hyphens (for example, "getting-started")',
       ),
     body: z

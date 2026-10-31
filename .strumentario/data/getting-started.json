@@ -1,0 +1,5 @@
+{
+  "title": "Getting started",
+  "slug": "getting-started",
+  "body": "Install Strumentario, start the server with pnpm --filter @strumentario/server serve, then connect an MCP host such as MCP Inspector."
+}

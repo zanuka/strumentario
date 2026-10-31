@@ -1,0 +1,5 @@
+{
+  "title": "Content primitives",
+  "slug": "content-primitives",
+  "body": "Strumentario exposes query, mutate, validate, and scaffold. Query reads pages, validate checks drafts, and every page carries a revision."
+}
