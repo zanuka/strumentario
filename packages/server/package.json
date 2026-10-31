@@ -1,7 +1,7 @@
 {
   "name": "@strumentario/server",
   "version": "0.0.0",
-  "description": "Streamable HTTP MCP server — content primitives (query / mutate / validate / scaffold)",
+  "description": "Streamable HTTP MCP server \u2014 content primitives (query / mutate / validate / scaffold)",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
-    "serve": "pnpm run build && node dist/serve.js"
+    "serve": "pnpm run build && node dist/serve.js",
+    "soak": "pnpm run build && node dist/soak-cli.js"
   },
   "engines": {
     "node": ">=20"

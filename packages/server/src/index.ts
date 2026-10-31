@@ -23,9 +23,23 @@ export function getServerPackageInfo(): ServerPackageInfo {
   };
 }
 
-export { createMcpHttpServer, handleMcpHttpRequest, MCP_HTTP_PATH } from "./http.js";
+export { DEFAULT_HOST, DEFAULT_PORT, loadConfig, type ServerConfig } from "./config.js";
+export {
+  createMcpHttpServer,
+  handleMcpHttpRequest,
+  HEALTH_PATH,
+  MCP_HTTP_PATH,
+  shutdownHttpServer,
+  type McpHttpOptions,
+} from "./http.js";
 export { HANDBOOK_PAGE_SCHEMA_URI, handbookPageJsonSchema, handbookPageSchema } from "./schema.js";
-export { createMcpServer } from "./server.js";
+export {
+  AGENT_HEADER,
+  createMcpServer,
+  getAgentId,
+  type McpServerOptions,
+  type ToolCallEvent,
+} from "./server.js";
 export type { HandbookPage } from "./schema.js";
 export {
   validateHandbookPage,
