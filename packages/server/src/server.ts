@@ -1,3 +1,4 @@
+import type { IncomingHttpHeaders } from "node:http";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
@@ -11,7 +12,7 @@ import { validateHandbookPage } from "./validate.js";
 
 export const PAGE_RESOURCE_TEMPLATE = "strumentario://pages/{slug}" as const;
 
-export interface CreateMcpServerOptions {
+export interface CreateMcpServerOptions extends McpServerOptions {
   /** Defaults to a file store at STRUMENTARIO_DATA_DIR (./.strumentario/data). */
   store?: PageStore;
 }
@@ -20,6 +21,29 @@ const VALIDATE_OUTPUT_SCHEMA = {
   valid: z.boolean(),
   errors: z.array(z.string()),
 };
+
+export const AGENT_HEADER = "x-strumentario-agent" as const;
+
+export interface ToolCallEvent {
+  tool: string;
+  /** Value of the `X-Strumentario-Agent` header, if the caller sent one. */
+  agent: string | undefined;
+}
+
+export interface McpServerOptions {
+  /** Observer invoked for each tool call, for attribution and tests. */
+  onToolCall?: (event: ToolCallEvent) => void;
+}
+
+/** Read the agent identity from request headers; a missing header is allowed. */
+export function getAgentId(
+  headers: IncomingHttpHeaders | Record<string, string | string[] | undefined> | undefined,
+): string | undefined {
+  const raw = headers?.[AGENT_HEADER];
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
 
 export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer {
   const store = options.store ?? new FileSystemPageStore();
@@ -46,7 +70,11 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
         openWorldHint: false,
       },
     },
-    async ({ instance }) => {
+    async ({ instance }, extra) => {
+      options.onToolCall?.({
+        tool: "validate",
+        agent: getAgentId(extra.requestInfo?.headers),
+      });
       const structuredContent = validateHandbookPage(instance);
 
       return {
@@ -75,7 +103,11 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
         openWorldHint: false,
       },
     },
-    async (input) => {
+    async (input, extra) => {
+      options.onToolCall?.({
+        tool: "query",
+        agent: getAgentId(extra.requestInfo?.headers),
+      });
       const structuredContent = await queryPages(store, input);
 
       return {

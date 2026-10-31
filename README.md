@@ -137,7 +137,13 @@ pnpm install
 pnpm --filter @strumentario/server serve
 ```
 
-This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp`. Set `PORT` to use a different local port.
+This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp`. Configuration (see `env.example`):
+
+- `PORT` — listen port, default `3001`.
+- `HOST` — bind address, default `127.0.0.1` (loopback only).
+- `MCP_AUTH_TOKEN` — optional shared secret; when set, `/mcp` requires `Authorization: Bearer <token>`.
+
+`GET /healthz` returns `200` for liveness checks. Send an optional `X-Strumentario-Agent` header to identify the calling agent. See [docs/server-transport-and-soak.md](docs/server-transport-and-soak.md) for the stateless-transport decision and soak results.
 
 ### MCP Inspector walkthrough
 
