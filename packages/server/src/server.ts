@@ -6,6 +6,7 @@ import {
   HANDBOOK_PAGE_SCHEMA_URI,
   handbookPageJsonSchema,
 } from "./schema.js";
+import { mutateInputShape, mutateOutputShape, mutatePage } from "./mutate.js";
 import { queryInputShape, queryOutputShape, queryPages } from "./query.js";
 import { FileSystemPageStore, type PageStore } from "./store.js";
 import { validateHandbookPage } from "./validate.js";
@@ -109,6 +110,34 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
         agent: getAgentId(extra.requestInfo?.headers),
       });
       const structuredContent = await queryPages(store, input);
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(structuredContent) }],
+        structuredContent,
+        ...(structuredContent.ok ? {} : { isError: true }),
+      };
+    },
+  );
+
+  server.registerTool(
+    "mutate",
+    {
+      title: "Create, update or delete handbook page",
+      description:
+        "Change the store: create, update or delete one handbook page. Use query to read pages and validate to check a draft without storing it. Dry-run by default (dryRun: true writes nothing); pass dryRun: false to write. Input is validated like the validate tool and invalid pages are refused. Update and delete take expectedRevision from query; a stale one returns a conflict with the current page. Create fails on an existing slug unless overwrite: true. Pass idempotencyKey to make retries safe.",
+      inputSchema: mutateInputShape,
+      outputSchema: mutateOutputShape,
+      annotations: {
+        readOnlyHint: false,
+        // One tool carries the delete action, so hosts must treat it as destructive;
+        // dry-run default and revision checks are the safety net.
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async (input) => {
+      const structuredContent = await mutatePage(store, input);
 
       return {
         content: [{ type: "text", text: JSON.stringify(structuredContent) }],

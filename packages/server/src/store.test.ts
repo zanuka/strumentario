@@ -138,7 +138,7 @@ describe("query tool and page resource", () => {
   it("lists query as a read-only tool next to validate", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual(["query", "validate"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["mutate", "query", "validate"]);
     expect(tools.find((t) => t.name === "query")?.annotations?.readOnlyHint).toBe(true);
   });
 

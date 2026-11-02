@@ -45,6 +45,7 @@ export {
   validateHandbookPage,
   type HandbookPageValidationResult,
 } from "./validate.js";
+export { mutatePage, type MutateInput, type MutateResult } from "./mutate.js";
 export { queryPages, type QueryInput, type QueryResult } from "./query.js";
 export {
   DATA_DIR_ENV,
@@ -52,7 +53,9 @@ export {
   FileSystemPageStore,
   resolveDataDir,
   revisionOf,
+  serializePage,
   StoreError,
+  type IdempotencyRecord,
   type PageStore,
   type StoredPage,
 } from "./store.js";
