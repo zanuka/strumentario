@@ -32,6 +32,7 @@ export {
   shutdownHttpServer,
   type McpHttpOptions,
 } from "./http.js";
+export { runServer, type RunServerOptions } from "./run.js";
 export { HANDBOOK_PAGE_SCHEMA_URI, handbookPageJsonSchema, handbookPageSchema } from "./schema.js";
 export {
   AGENT_HEADER,

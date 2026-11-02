@@ -1,0 +1,33 @@
+{
+  "name": "@strumentario/cli",
+  "version": "0.0.0",
+  "description": "strumentario CLI — a thin MCP client for the Strumentario server",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "strumentario": "./dist/main.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "strumentario": "pnpm run build && node dist/main.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@strumentario/server": "workspace:*"
+  }
+}

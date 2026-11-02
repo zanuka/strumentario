@@ -30,7 +30,7 @@ pnpm test
 pnpm eval
 ```
 
-Packages live under `packages/` (`@strumentario/server`, `@strumentario/evals`). Optional `cli` / `widget` / `app` packages land in later phases. PR CI runs typecheck + unit tests; Braintrust evals are nightly / manual and skip when `BRAINTRUST_API_KEY` is unset.
+Packages live under `packages/` (`@strumentario/server`, `@strumentario/cli`, `@strumentario/evals`). Optional `widget` / `app` packages land in later phases. PR CI runs typecheck + unit tests; Braintrust evals are nightly / manual and skip when `BRAINTRUST_API_KEY` is unset.
 
 See [ROADMAP.md](./ROADMAP.md) for the current phase and definition of done.
 

@@ -145,6 +145,32 @@ This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp
 
 `GET /healthz` returns `200` for liveness checks. Send an optional `X-Strumentario-Agent` header to identify the calling agent. See [docs/server-transport-and-soak.md](docs/server-transport-and-soak.md) for the stateless-transport decision and soak results.
 
+### CLI quick start
+
+The `strumentario` CLI is a thin MCP client: every command goes through the server's tools and resources, so there is no CLI-only API or write path.
+
+```bash
+pnpm --filter @strumentario/cli build
+alias strumentario="node $PWD/packages/cli/dist/main.js"
+
+strumentario serve                                   # same config as `pnpm --filter @strumentario/server serve`
+strumentario tools                                   # tools and input schemas, straight from tools/list
+strumentario call validate --json \
+  --input '{"instance":{"title":"Getting started","slug":"getting-started","body":"Draft content."}}'
+strumentario call mutate --input-file page.json      # dry-run unless the input says "dryRun": false
+strumentario call mutate --help                      # description and schema come from the server
+strumentario resource strumentario://schemas/handbook-page
+```
+
+Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/mcp`), `--token` (default `$STRUMENTARIO_TOKEN` or `$MCP_AUTH_TOKEN`), `--agent <id>` (sent as `X-Strumentario-Agent`; default `$STRUMENTARIO_AGENT`), `--json` (only the result on stdout, diagnostics on stderr), `--dry-run` (`serve`: print the resolved config and exit; `call`: force `dryRun: true` for tools that accept it).
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | Success |
+| `1` | Tool or validation error (including `validate` returning `valid: false`, an unknown tool, or a missing resource) |
+| `2` | Usage error: unknown command or option, malformed `--input` |
+| `3` | Connection or auth error: server unreachable or token rejected |
+
 ### MCP Inspector walkthrough
 
 1. Start the server with `pnpm --filter @strumentario/server serve`.
@@ -165,7 +191,7 @@ This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp
 
 ## Status
 
-Strumentario is in the earliest public stage. We are building in the open. The TypeScript monorepo foundation is in place (`packages/server`, `packages/evals`); Phase 1 is the Streamable HTTP MCP server.
+Strumentario is in the earliest public stage. We are building in the open. The TypeScript monorepo foundation is in place (`packages/server`, `packages/cli`, `packages/evals`); Phase 1 is the Streamable HTTP MCP server.
 
 ```bash
 pnpm install
