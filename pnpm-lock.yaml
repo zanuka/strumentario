@@ -18,6 +18,15 @@ importers:
         specifier: ^3.0.9
         version: 3.2.7(@types/node@22.20.1)(tsx@4.23.11)
 
+  packages/cli:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.30.0
+        version: 1.30.0(zod@4.6.5)
+      '@strumentario/server':
+        specifier: workspace:*
+        version: link:../server
+
   packages/evals:
     dependencies:
       '@strumentario/server':
