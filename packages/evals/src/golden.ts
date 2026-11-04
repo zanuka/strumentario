@@ -1,0 +1,343 @@
+import type { GoldenCase, GoldenPage } from "./types.js";
+
+const intro: GoldenPage = { title: "Intro", slug: "intro", body: "Welcome to the handbook." };
+const onboarding: GoldenPage = { title: "Onboarding", slug: "onboarding", body: "First week checklist." };
+const fresh: GoldenPage = { title: "Fresh page", slug: "fresh-page", body: "Brand new content." };
+
+/**
+ * The golden dataset: one entry per behaviour agents rely on. Add a case whenever a
+ * tool's behaviour changes (see packages/evals/README.md).
+ */
+export const goldenCases: readonly GoldenCase[] = [
+  // --- query -----------------------------------------------------------------
+  {
+    id: "query-list-all",
+    kind: "tool",
+    category: "query",
+    intent: "Listing with no arguments returns every stored page and the total, so agents can discover content.",
+    seed: [intro, onboarding],
+    steps: [
+      {
+        call: { tool: "query", input: {} },
+        expect: { isError: false, match: { ok: true, total: 2, pages: [{ slug: "intro" }, { slug: "onboarding" }] } },
+      },
+    ],
+  },
+  {
+    id: "query-get-by-slug",
+    kind: "tool",
+    category: "query",
+    intent: "Get-by-slug returns the page with its revision, the value an agent needs for a later update.",
+    seed: [intro],
+    steps: [
+      {
+        call: { tool: "query", input: { slug: "intro" } },
+        expect: { isError: false, match: { ok: true, page: { ...intro, revision: { $present: true } } } },
+      },
+    ],
+  },
+  {
+    id: "query-text-filter",
+    kind: "tool",
+    category: "query",
+    intent: "A text query filters by title, slug and body, so agents can find pages without knowing slugs.",
+    seed: [intro, onboarding],
+    steps: [
+      {
+        call: { tool: "query", input: { text: "checklist" } },
+        expect: { isError: false, match: { ok: true, total: 1, pages: [{ slug: "onboarding" }] } },
+      },
+    ],
+  },
+  {
+    id: "query-unknown-slug",
+    kind: "tool",
+    category: "query",
+    intent: "An unknown slug is a not_found error that lists the available slugs, so the agent can self-correct.",
+    seed: [intro],
+    steps: [
+      {
+        call: { tool: "query", input: { slug: "nope" } },
+        expect: {
+          isError: true,
+          match: { ok: false, error: { code: "not_found", availableSlugs: ["intro"] } },
+        },
+      },
+    ],
+  },
+  {
+    id: "query-limit-out-of-range",
+    kind: "tool",
+    category: "query",
+    intent: "A limit outside the documented range is rejected at the schema boundary instead of being silently clamped.",
+    seed: [intro],
+    steps: [
+      {
+        call: { tool: "query", input: { limit: 0 } },
+        expect: { isError: true },
+      },
+    ],
+  },
+
+  // --- validate ----------------------------------------------------------------
+  {
+    id: "validate-happy-path",
+    kind: "tool",
+    category: "validate",
+    intent: "A well-formed draft validates with no errors.",
+    steps: [
+      {
+        call: { tool: "validate", input: { instance: fresh } },
+        expect: { isError: false, match: { valid: true, errors: [] } },
+      },
+    ],
+  },
+  {
+    id: "validate-bad-slug",
+    kind: "tool",
+    category: "validate",
+    intent: "A slug that is not lowercase-hyphenated is reported with an actionable example.",
+    steps: [
+      {
+        call: { tool: "validate", input: { instance: { ...fresh, slug: "Bad Slug!" } } },
+        expect: {
+          isError: false,
+          match: { valid: false, errors: [{ $contains: "slug: must use lowercase letters, numbers, and hyphens" }] },
+        },
+      },
+    ],
+  },
+  {
+    id: "validate-empty-body",
+    kind: "tool",
+    category: "validate",
+    intent: "A blank body (whitespace only) is invalid, so empty pages never reach the store.",
+    steps: [
+      {
+        call: { tool: "validate", input: { instance: { ...fresh, body: "   " } } },
+        expect: { isError: false, match: { valid: false, errors: ["body: must be a non-empty string"] } },
+      },
+    ],
+  },
+  {
+    id: "validate-extra-field",
+    kind: "tool",
+    category: "validate",
+    intent: "Unknown fields are rejected (strict schema), so drafts cannot smuggle data the store does not model.",
+    steps: [
+      {
+        call: { tool: "validate", input: { instance: { ...fresh, tags: ["x"] } } },
+        expect: { isError: false, match: { valid: false, errors: [{ $contains: "tags" }] } },
+      },
+    ],
+  },
+  {
+    id: "validate-missing-args",
+    kind: "tool",
+    category: "validate",
+    intent: "Calling validate without its required instance fails loudly instead of reporting a vacuous success.",
+    steps: [{ call: { tool: "validate", input: {} }, expect: { isError: true } }],
+  },
+
+  // --- mutate ------------------------------------------------------------------
+  {
+    id: "mutate-create-writes",
+    kind: "tool",
+    category: "mutate",
+    intent: "create with dryRun:false stores the page and returns its revision.",
+    steps: [
+      {
+        call: { tool: "mutate", input: { action: "create", slug: "fresh-page", page: fresh, dryRun: false } },
+        expect: { isError: false, match: { ok: true, dryRun: false, page: { ...fresh, revision: { $present: true } } } },
+      },
+    ],
+    after: [{ slug: "fresh-page", exists: true, page: fresh }],
+  },
+  {
+    id: "mutate-dry-run-default-writes-nothing",
+    kind: "tool",
+    category: "mutate",
+    intent: "Mutations are dry runs unless dryRun:false is explicit: the preview succeeds and nothing is written.",
+    steps: [
+      {
+        call: { tool: "mutate", input: { action: "create", slug: "fresh-page", page: fresh } },
+        expect: { isError: false, match: { ok: true, dryRun: true, page: fresh } },
+      },
+    ],
+    after: [{ slug: "fresh-page", exists: false }],
+  },
+  {
+    id: "mutate-invalid-payload-writes-nothing",
+    kind: "tool",
+    category: "mutate",
+    intent: "An invalid page (empty body) is refused with the validation errors, and the store stays untouched.",
+    steps: [
+      {
+        call: {
+          tool: "mutate",
+          input: { action: "create", slug: "fresh-page", page: { ...fresh, body: "" }, dryRun: false },
+        },
+        expect: {
+          isError: true,
+          match: { ok: false, error: { code: "invalid", errors: ["body: must be a non-empty string"] } },
+        },
+      },
+    ],
+    after: [{ slug: "fresh-page", exists: false }],
+  },
+  {
+    id: "mutate-update-unknown-slug",
+    kind: "tool",
+    category: "mutate",
+    intent: "Updating a page that does not exist is not_found (never an implicit create), with guidance to use create.",
+    steps: [
+      {
+        call: {
+          tool: "mutate",
+          input: { action: "update", slug: "fresh-page", page: fresh, expectedRevision: "abc", dryRun: false },
+        },
+        expect: { isError: true, match: { ok: false, error: { code: "not_found" } } },
+      },
+    ],
+    after: [{ slug: "fresh-page", exists: false }],
+  },
+  {
+    id: "mutate-update-requires-revision",
+    kind: "tool",
+    category: "mutate",
+    intent: "An update without expectedRevision is refused and returns the current revision, so blind overwrites cannot happen.",
+    seed: [intro],
+    steps: [
+      {
+        call: {
+          tool: "mutate",
+          input: { action: "update", slug: "intro", page: { ...intro, body: "Changed." }, dryRun: false },
+        },
+        expect: { isError: true, match: { ok: false, error: { code: "revision_required" } } },
+      },
+    ],
+    after: [{ slug: "intro", exists: true, page: intro }],
+  },
+  {
+    id: "mutate-missing-args",
+    kind: "tool",
+    category: "mutate",
+    intent: "Calling mutate without its required slug fails at the schema boundary.",
+    steps: [{ call: { tool: "mutate", input: { action: "create" } }, expect: { isError: true } }],
+    after: [{ slug: "fresh-page", exists: false }],
+  },
+
+  // --- concurrency -------------------------------------------------------------
+  {
+    id: "concurrent-updates-same-revision",
+    kind: "tool",
+    category: "concurrency",
+    intent: "Two agents updating from the same expectedRevision at once: exactly one wins and the other gets a conflict.",
+    seed: [intro],
+    steps: [
+      {
+        parallel: [
+          {
+            tool: "mutate",
+            input: {
+              action: "update",
+              slug: "intro",
+              page: { ...intro, body: "Agent A edit." },
+              expectedRevision: "$revision:intro",
+              dryRun: false,
+            },
+          },
+          {
+            tool: "mutate",
+            input: {
+              action: "update",
+              slug: "intro",
+              page: { ...intro, body: "Agent B edit." },
+              expectedRevision: "$revision:intro",
+              dryRun: false,
+            },
+          },
+        ],
+        expect: { ok: 1, errorCodes: ["conflict"] },
+      },
+    ],
+    after: [{ slug: "intro", exists: true }],
+  },
+  {
+    id: "concurrent-replayed-idempotency-key",
+    kind: "tool",
+    category: "concurrency",
+    intent: "A retry that races its original (same idempotencyKey) writes once: both calls succeed and one is flagged replayed.",
+    steps: [
+      {
+        parallel: [
+          {
+            tool: "mutate",
+            input: { action: "create", slug: "fresh-page", page: fresh, dryRun: false, idempotencyKey: "retry-1" },
+          },
+          {
+            tool: "mutate",
+            input: { action: "create", slug: "fresh-page", page: fresh, dryRun: false, idempotencyKey: "retry-1" },
+          },
+        ],
+        expect: { ok: 2, replayed: 1 },
+      },
+    ],
+    after: [{ slug: "fresh-page", exists: true, page: fresh }],
+  },
+  {
+    id: "idempotency-key-reused-for-different-input",
+    kind: "tool",
+    category: "concurrency",
+    intent: "Reusing an idempotencyKey for a different change is refused rather than replaying the wrong result.",
+    steps: [
+      {
+        call: {
+          tool: "mutate",
+          input: { action: "create", slug: "fresh-page", page: fresh, dryRun: false, idempotencyKey: "k-1" },
+        },
+        expect: { isError: false, match: { ok: true } },
+      },
+      {
+        call: {
+          tool: "mutate",
+          input: {
+            action: "create",
+            slug: "other-page",
+            page: { title: "Other", slug: "other-page", body: "Different." },
+            dryRun: false,
+            idempotencyKey: "k-1",
+          },
+        },
+        expect: { isError: true, match: { ok: false, error: { code: "idempotency_mismatch" } } },
+      },
+    ],
+    after: [
+      { slug: "fresh-page", exists: true },
+      { slug: "other-page", exists: false },
+    ],
+  },
+
+  // --- cli ---------------------------------------------------------------------
+  {
+    id: "cli-call-validate-json",
+    kind: "cli",
+    category: "cli",
+    intent: "`strumentario call validate --json` exits 0 and prints only the tool result as JSON on stdout.",
+    args: ["call", "validate", "--json", "--input", JSON.stringify({ instance: fresh })],
+    expect: { exitCode: 0, stdoutJson: { valid: true, errors: [] } },
+  },
+  {
+    id: "cli-call-query-unknown-slug",
+    kind: "cli",
+    category: "cli",
+    intent: "A tool error maps to exit code 1 while --json still carries the structured error for scripts.",
+    seed: [intro],
+    args: ["call", "query", "--json", "--input", JSON.stringify({ slug: "nope" })],
+    expect: {
+      exitCode: 1,
+      stdoutJson: { ok: false, error: { code: "not_found", availableSlugs: ["intro"] } },
+      stderrIncludes: "reported an error",
+    },
+  },
+];

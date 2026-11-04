@@ -11,6 +11,7 @@ export default defineConfig({
         root,
         "packages/server/src/index.ts",
       ),
+      "@strumentario/cli": path.join(root, "packages/cli/src/index.ts"),
     },
   },
   test: {

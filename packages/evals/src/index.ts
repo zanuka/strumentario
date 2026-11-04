@@ -32,7 +32,7 @@ export function checkEvalGate(
     ok: false,
     reason: "not_implemented",
     message:
-      "Eval suite is scaffolded for Phase 2. Golden datasets and Braintrust scorers are not wired yet.",
+      "Eval suite is scaffolded for Phase 2. Braintrust scorers are not wired yet; run the offline golden suite with `pnpm eval:local`.",
     primitives,
   };
 }
