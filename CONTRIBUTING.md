@@ -26,7 +26,9 @@ Thanks for your interest. Strumentario is in the earliest public stage; the high
 pnpm install
 pnpm typecheck
 pnpm test
-# Eval suite (requires Braintrust keys; Phase 2)
+# Offline golden evals (no keys needed): see packages/evals/README.md
+pnpm eval:local
+# Braintrust eval suite (requires keys; Phase 2, not wired yet)
 pnpm eval
 ```
 

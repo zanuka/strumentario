@@ -98,10 +98,11 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 
 **Do not skip or defer past Phase 3.** This is the earliest credible differentiator.
 
-- [ ] Braintrust project wired; golden dataset checked into repo (or documented export path)
+- [x] Golden dataset checked into repo (`packages/evals/src/golden.ts`) with an offline direct-invocation harness (`pnpm eval:local`)
+- [ ] Braintrust project wired; golden dataset uploaded as a Braintrust dataset
 - [ ] Scorers for tool choice / schema validity (custom where autoevals are insufficient)
 - [ ] `bt eval` (or equivalent CI job) documented; one checked-in experiment summary in `docs/`
-- [ ] Golden cases cover the content primitives (query / mutate / validate / scaffold-oriented paths)
+- [ ] Golden cases cover the content primitives (query / mutate / validate done, incl. concurrency and CLI; scaffold-oriented paths land with the scaffold tool)
 - [ ] Tag `v0.2.0` — “prompt/tool changes are measurable”
 
 **Exit criteria:** a reviewer can run the eval suite from docs and see a pass/fail that would catch a real regression in tool selection or output shape. Public experiment summary exists before (or with) the first polished widget demo.
