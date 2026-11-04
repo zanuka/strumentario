@@ -1,27 +1,25 @@
 import type { IncomingHttpHeaders } from "node:http";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
+import { getToolDefinition, type ToolDefinition } from "./contracts.js";
 import {
   HANDBOOK_PAGE_SCHEMA_URI,
+  handbookDomain,
   handbookPageJsonSchema,
 } from "./schema.js";
-import { mutateInputShape, mutateOutputShape, mutatePage } from "./mutate.js";
-import { queryInputShape, queryOutputShape, queryPages } from "./query.js";
+// Registered shapes are generated, so handler input types are asserted here;
+// the drift test (contracts.test.ts) keeps shape and handler contract aligned.
+import { mutatePage, type MutateInput } from "./mutate.js";
+import { queryPages, type QueryInput } from "./query.js";
 import { FileSystemPageStore, type PageStore } from "./store.js";
 import { validateHandbookPage } from "./validate.js";
 
-export const PAGE_RESOURCE_TEMPLATE = "strumentario://pages/{slug}" as const;
+export const PAGE_RESOURCE_TEMPLATE = handbookDomain.resources.instanceTemplate;
 
 export interface CreateMcpServerOptions extends McpServerOptions {
   /** Defaults to a file store at STRUMENTARIO_DATA_DIR (./.strumentario/data). */
   store?: PageStore;
 }
-
-const VALIDATE_OUTPUT_SCHEMA = {
-  valid: z.boolean(),
-  errors: z.array(z.string()),
-};
 
 export const AGENT_HEADER = "x-strumentario-agent" as const;
 
@@ -53,24 +51,19 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
     version: "0.0.1",
   });
 
+  // Tool metadata and schemas come from the generated definitions (contracts.ts);
+  // only the handlers live here.
+  const register = (definition: ToolDefinition) => ({
+    title: definition.title,
+    description: definition.description,
+    inputSchema: definition.inputShape,
+    outputSchema: definition.outputShape,
+    annotations: definition.annotations,
+  });
+
   server.registerTool(
     "validate",
-    {
-      title: "Validate handbook page",
-      description:
-        "Validate a handbook page draft with title, slug, and body against the Strumentario schema.",
-      inputSchema: {
-        instance: z
-          .unknown()
-          .describe("The handbook page draft to validate."),
-      },
-      outputSchema: VALIDATE_OUTPUT_SCHEMA,
-      annotations: {
-        readOnlyHint: true,
-        destructiveHint: false,
-        openWorldHint: false,
-      },
-    },
+    register(getToolDefinition("validate")),
     async ({ instance }, extra) => {
       options.onToolCall?.({
         tool: "validate",
@@ -92,24 +85,13 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
 
   server.registerTool(
     "query",
-    {
-      title: "Query handbook pages",
-      description:
-        "Read handbook pages. Pass slug to get one page, or omit it to list pages (optional text filter and limit). Every page includes its revision. Read-only.",
-      inputSchema: queryInputShape,
-      outputSchema: queryOutputShape,
-      annotations: {
-        readOnlyHint: true,
-        destructiveHint: false,
-        openWorldHint: false,
-      },
-    },
+    register(getToolDefinition("query")),
     async (input, extra) => {
       options.onToolCall?.({
         tool: "query",
         agent: getAgentId(extra.requestInfo?.headers),
       });
-      const structuredContent = await queryPages(store, input);
+      const structuredContent = await queryPages(store, input as QueryInput);
 
       return {
         content: [{ type: "text", text: JSON.stringify(structuredContent) }],
@@ -121,23 +103,9 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
 
   server.registerTool(
     "mutate",
-    {
-      title: "Create, update or delete handbook page",
-      description:
-        "Change the store: create, update or delete one handbook page. Use query to read pages and validate to check a draft without storing it. Dry-run by default (dryRun: true writes nothing); pass dryRun: false to write. Input is validated like the validate tool and invalid pages are refused. Update and delete take expectedRevision from query; a stale one returns a conflict with the current page. Create fails on an existing slug unless overwrite: true. Pass idempotencyKey to make retries safe.",
-      inputSchema: mutateInputShape,
-      outputSchema: mutateOutputShape,
-      annotations: {
-        readOnlyHint: false,
-        // One tool carries the delete action, so hosts must treat it as destructive;
-        // dry-run default and revision checks are the safety net.
-        destructiveHint: true,
-        idempotentHint: false,
-        openWorldHint: false,
-      },
-    },
+    register(getToolDefinition("mutate")),
     async (input) => {
-      const structuredContent = await mutatePage(store, input);
+      const structuredContent = await mutatePage(store, input as unknown as MutateInput);
 
       return {
         content: [{ type: "text", text: JSON.stringify(structuredContent) }],
