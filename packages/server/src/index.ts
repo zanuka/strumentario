@@ -33,7 +33,33 @@ export {
   type McpHttpOptions,
 } from "./http.js";
 export { runServer, type RunServerOptions } from "./run.js";
-export { HANDBOOK_PAGE_SCHEMA_URI, handbookPageJsonSchema, handbookPageSchema } from "./schema.js";
+export {
+  HANDBOOK_PAGE_SCHEMA_URI,
+  handbookDomain,
+  handbookPageJsonSchema,
+  handbookPageSchema,
+  SLUG_PATTERN,
+} from "./schema.js";
+export {
+  buildResourceShape,
+  buildStoredShape,
+  defineDomain,
+  type ContentPrimitiveName,
+  type DomainDefinition,
+  type FieldName,
+  type ResourceOf,
+  type FieldDefinition,
+  type StringFieldDefinition,
+} from "./domain.js";
+export {
+  buildToolContracts,
+  buildToolDefinitions,
+  toolContracts,
+  toToolContract,
+  type ToolAnnotations,
+  type ToolContract,
+  type ToolDefinition,
+} from "./contracts.js";
 export {
   AGENT_HEADER,
   createMcpServer,

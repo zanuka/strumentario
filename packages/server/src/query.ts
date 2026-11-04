@@ -1,47 +1,15 @@
-import { z } from "zod";
+import {
+  getToolDefinition,
+  QUERY_DEFAULT_LIMIT,
+  QUERY_MAX_LIMIT,
+} from "./contracts.js";
 import type { PageStore, StoredPage } from "./store.js";
 
-export const QUERY_DEFAULT_LIMIT = 20;
-export const QUERY_MAX_LIMIT = 100;
+export { QUERY_DEFAULT_LIMIT, QUERY_MAX_LIMIT };
 
-export const queryInputShape = {
-  slug: z
-    .string()
-    .optional()
-    .describe("Return the single page with this slug. When set, text and limit are ignored."),
-  text: z
-    .string()
-    .optional()
-    .describe("List only pages whose title, slug, or body contains this text (case-insensitive)."),
-  limit: z
-    .number()
-    .int()
-    .min(1)
-    .max(QUERY_MAX_LIMIT)
-    .optional()
-    .describe(`Maximum pages to list (default ${QUERY_DEFAULT_LIMIT}, max ${QUERY_MAX_LIMIT}).`),
-};
-
-const storedPageShape = z.object({
-  title: z.string(),
-  slug: z.string(),
-  body: z.string(),
-  revision: z.string().describe("Content hash of the stored page; changes whenever the page changes."),
-});
-
-export const queryOutputShape = {
-  ok: z.boolean(),
-  page: storedPageShape.optional().describe("Set for a successful get-by-slug."),
-  pages: z.array(storedPageShape).optional().describe("Set for a successful list."),
-  total: z.number().int().optional().describe("Pages matching before limit was applied."),
-  error: z
-    .object({
-      code: z.enum(["not_found", "store_error"]),
-      message: z.string(),
-      availableSlugs: z.array(z.string()),
-    })
-    .optional(),
-};
+// Generated from the domain definition (contracts.ts); never hand-edit the shapes.
+export const queryInputShape = getToolDefinition("query").inputShape;
+export const queryOutputShape = getToolDefinition("query").outputShape;
 
 export interface QueryInput {
   slug?: string | undefined;

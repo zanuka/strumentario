@@ -83,7 +83,7 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 
 - [ ] Streamable HTTP MCP server with the **high-signal set**: query, mutate, validate, plus at least one scaffold-oriented tool; ≥1 resource + ≥1 prompt
 - [ ] Domain can start Sanity-like or a simple custom schema store — schema-driven handlers, not a grab-bag of unrelated demos
-- [ ] Document (even briefly) that the schema is intended to generate surfaces later; keep tool contracts stable for evals
+- [x] Document (even briefly) that the schema is intended to generate surfaces later; keep tool contracts stable for evals — see `docs/architecture/schema-generation.md`
 - [ ] Cursor / Claude Code / other host config snippets in README
 - [ ] MCP Inspector walkthrough (screenshot or short clip)
 - [ ] Tag `v0.1.0` — “agents can call my content instruments”

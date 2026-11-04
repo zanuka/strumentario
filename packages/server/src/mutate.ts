@@ -1,73 +1,12 @@
 import { createHash } from "node:crypto";
-import { z } from "zod";
+import { getToolDefinition } from "./contracts.js";
 import { handbookPageSchema, SLUG_PATTERN } from "./schema.js";
 import { revisionOf, serializePage, type PageStore, type StoredPage } from "./store.js";
 import { validateHandbookPage } from "./validate.js";
 
-export const mutateInputShape = {
-  action: z
-    .enum(["create", "update", "delete"])
-    .describe("create adds a new page, update replaces an existing page, delete removes a page."),
-  slug: z
-    .string()
-    .describe("Slug of the page to change. For create and update it must equal page.slug."),
-  page: z
-    .unknown()
-    .optional()
-    .describe("The full page ({ title, slug, body }) for create and update. Ignored for delete."),
-  dryRun: z
-    .boolean()
-    .optional()
-    .describe("Default true: report the intended change and write nothing. Pass false to write."),
-  expectedRevision: z
-    .string()
-    .optional()
-    .describe("Revision from query that this change is based on. Required for update and delete unless overwrite is true; a stale value returns a conflict."),
-  overwrite: z
-    .boolean()
-    .optional()
-    .describe("Allow create over an existing slug, or update/delete without expectedRevision. Default false."),
-  idempotencyKey: z
-    .string()
-    .min(1)
-    .max(200)
-    .optional()
-    .describe("Retry token. Replaying the same key with the same input returns the original result and writes nothing again."),
-};
-
-const pageShape = z.object({
-  title: z.string(),
-  slug: z.string(),
-  body: z.string(),
-  revision: z.string(),
-});
-
-export const mutateOutputShape = {
-  ok: z.boolean(),
-  action: z.enum(["create", "update", "delete"]),
-  slug: z.string(),
-  dryRun: z.boolean().describe("True when nothing was written."),
-  replayed: z.boolean().optional().describe("True when this is the stored result of an earlier call with the same idempotencyKey."),
-  page: pageShape.optional().describe("The page after the change (for a dry run, as it would be). Absent for delete."),
-  previous: pageShape.optional().describe("The page before the change, when one existed."),
-  error: z
-    .object({
-      code: z.enum([
-        "invalid",
-        "not_found",
-        "already_exists",
-        "revision_required",
-        "conflict",
-        "idempotency_mismatch",
-        "store_error",
-      ]),
-      message: z.string(),
-      errors: z.array(z.string()).optional().describe("Validation errors, identical to the validate tool."),
-      currentRevision: z.string().optional(),
-      currentPage: pageShape.optional().describe("Fresh state to retry from, set on conflict and already_exists."),
-    })
-    .optional(),
-};
+// Generated from the domain definition (contracts.ts); never hand-edit the shapes.
+export const mutateInputShape = getToolDefinition("mutate").inputShape;
+export const mutateOutputShape = getToolDefinition("mutate").outputShape;
 
 export interface MutateInput {
   action: "create" | "update" | "delete";
