@@ -92,6 +92,39 @@ export interface CliGoldenCase extends GoldenCaseBase {
 
 export type GoldenCase = ToolGoldenCase | CliGoldenCase;
 
+/** One page as stored, used to compare store state before and after a step. */
+export interface PageSnapshot {
+  slug: string;
+  title: string;
+  body: string;
+  revision: string;
+}
+
+/** One tool call the harness actually made, with its resolved input and observed outcome. */
+export interface CallRecord {
+  tool: string;
+  /** The arguments sent, after "$revision:<slug>" placeholders were resolved. */
+  input: Record<string, unknown>;
+  isError: boolean;
+  /** The result's structuredContent, undefined for protocol-level rejections. */
+  structured: unknown;
+  text: string;
+}
+
+export interface StepRecord {
+  /** True when the calls were started together. */
+  parallel: boolean;
+  calls: CallRecord[];
+  storeBefore: PageSnapshot[];
+  storeAfter: PageSnapshot[];
+}
+
+/** What a tool case did, recorded so scorers can judge more than pass/fail. CLI cases have no trace. */
+export interface CaseTrace {
+  steps: StepRecord[];
+  finalStore: PageSnapshot[];
+}
+
 export interface CaseResult {
   id: string;
   category: GoldenCategory;
@@ -99,6 +132,8 @@ export interface CaseResult {
   /** Empty when the case passed; otherwise one actionable line per failed check. */
   failures: string[];
   durationMs: number;
+  /** Present for tool cases; scorers read it. */
+  trace?: CaseTrace;
 }
 
 export interface SuiteResult {

@@ -16,10 +16,14 @@ import {
 import { matchSubset } from "./match.js";
 import type {
   CaseResult,
+  CallRecord,
+  CaseTrace,
   CliGoldenCase,
   GoldenCase,
   GoldenStep,
+  PageSnapshot,
   ParallelExpectation,
+  StepRecord,
   SuiteResult,
   ToolCallSpec,
   ToolGoldenCase,
@@ -45,15 +49,19 @@ export async function runCase(goldenCase: GoldenCase): Promise<CaseResult> {
   const started = Date.now();
   const dir = await mkdtemp(path.join(tmpdir(), "strumentario-eval-"));
   let failures: string[];
+  let trace: CaseTrace | undefined;
   try {
     const store = new FileSystemPageStore(dir);
     for (const page of goldenCase.seed ?? []) {
       await store.put(page);
     }
-    failures =
-      goldenCase.kind === "tool"
-        ? await runToolCase(goldenCase, store)
-        : await runCliCase(goldenCase, dir);
+    if (goldenCase.kind === "tool") {
+      const run = await runToolCase(goldenCase, store);
+      failures = run.failures;
+      trace = { steps: run.steps, finalStore: await snapshot(store) };
+    } else {
+      failures = await runCliCase(goldenCase, dir);
+    }
     failures.push(...(await checkStore(goldenCase, store)));
   } catch (error) {
     // A harness or transport crash is a failed case, never a silent pass.
@@ -67,18 +75,23 @@ export async function runCase(goldenCase: GoldenCase): Promise<CaseResult> {
     passed: failures.length === 0,
     failures,
     durationMs: Date.now() - started,
+    ...(trace ? { trace } : {}),
   };
 }
 
 // --- tool cases: in-process MCP client <-> createMcpServer() ---------------
 
-async function runToolCase(goldenCase: ToolGoldenCase, store: FileSystemPageStore): Promise<string[]> {
+async function runToolCase(
+  goldenCase: ToolGoldenCase,
+  store: FileSystemPageStore,
+): Promise<{ failures: string[]; steps: StepRecord[] }> {
   const server = createMcpServer({ store });
   const client = new Client({ name: "strumentario-evals", version: "0.0.0" });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
 
   const failures: string[] = [];
+  const steps: StepRecord[] = [];
   try {
     const known = new Set(toolContracts.map((contract) => contract.name));
     for (const [index, step] of goldenCase.steps.entries()) {
@@ -90,13 +103,23 @@ async function runToolCase(goldenCase: ToolGoldenCase, store: FileSystemPageStor
         );
         continue;
       }
-      failures.push(...(await runStep(client, store, step, `step ${index + 1}`)));
+      const storeBefore = await snapshot(store);
+      const records: CallRecord[] = [];
+      failures.push(...(await runStep(client, store, step, `step ${index + 1}`, records)));
+      steps.push({ parallel: "parallel" in step, calls: records, storeBefore, storeAfter: await snapshot(store) });
     }
   } finally {
     await client.close().catch(() => undefined);
     await server.close().catch(() => undefined);
   }
-  return failures;
+  return { failures, steps };
+}
+
+async function snapshot(store: FileSystemPageStore): Promise<PageSnapshot[]> {
+  const pages = await store.list();
+  return pages
+    .map(({ slug, title, body, revision }) => ({ slug, title, body, revision }))
+    .sort((a, b) => a.slug.localeCompare(b.slug));
 }
 
 async function runStep(
@@ -104,9 +127,12 @@ async function runStep(
   store: FileSystemPageStore,
   step: GoldenStep,
   label: string,
+  record: CallRecord[],
 ): Promise<string[]> {
   if ("call" in step) {
-    const outcome = await invoke(client, await resolveCall(store, step.call));
+    const resolvedCall = await resolveCall(store, step.call);
+    const outcome = await invoke(client, resolvedCall);
+    record.push({ ...resolvedCall, ...outcome });
     const failures: string[] = [];
     if (outcome.isError !== step.expect.isError) {
       failures.push(`${label} (${step.call.tool}): expected isError=${step.expect.isError}, got ${outcome.isError}`);
@@ -125,6 +151,7 @@ async function runStep(
   // Resolve every input first so all placeholders see the same pre-step store, then start the calls together.
   const resolved = await Promise.all(step.parallel.map((call) => resolveCall(store, call)));
   const outcomes = await Promise.all(resolved.map((call) => invoke(client, call)));
+  resolved.forEach((call, index) => record.push({ ...call, ...(outcomes[index] as CallOutcome) }));
   return checkParallel(outcomes, step.expect, label);
 }
 

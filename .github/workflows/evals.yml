@@ -22,6 +22,9 @@ jobs:
           node-version: "22"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Offline golden suite + code scorers. Needs no secrets, so a regression fails the job even without a key.
+      - name: Run offline golden suite and scorers
+        run: pnpm eval:local
       - name: Skip when Braintrust key is missing
         id: gate
         env:
@@ -33,7 +36,8 @@ jobs:
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Run evals
+      # Exits non-zero when any case or scorer regresses, which fails the job.
+      - name: Run Braintrust experiment
         if: steps.gate.outputs.skip != 'true'
         run: pnpm eval
         env:

@@ -19,7 +19,8 @@
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
     "eval": "node --import tsx/esm src/run.ts",
-    "eval:local": "node --import tsx/esm src/local.ts"
+    "eval:local": "node --import tsx/esm src/local.ts",
+    "eval:regression": "node --import tsx/esm src/regression.ts"
   },
   "engines": {
     "node": ">=20"
@@ -27,7 +28,9 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@strumentario/cli": "workspace:*",
-    "@strumentario/server": "workspace:*"
+    "@strumentario/server": "workspace:*",
+    "ajv": "^8.20.0",
+    "braintrust": "^3.43.0"
   },
   "devDependencies": {
     "tsx": "^4.19.3"
