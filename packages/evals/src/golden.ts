@@ -318,6 +318,87 @@ export const goldenCases: readonly GoldenCase[] = [
     ],
   },
 
+  // --- scaffold ----------------------------------------------------------------
+  {
+    id: "scaffold-client-returns-files",
+    kind: "tool",
+    category: "scaffold",
+    intent: "scaffold target client returns the typed client module in memory and writes nothing, so agents can generate code from the schema.",
+    steps: [
+      {
+        call: { tool: "scaffold", input: { target: "client" } },
+        expect: {
+          isError: false,
+          match: {
+            ok: true,
+            target: "client",
+            written: false,
+            files: [{ path: "strumentario-client.ts", content: { $contains: "export function createStrumentarioClient" } }],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: "scaffold-host-config-lists-tools",
+    kind: "tool",
+    category: "scaffold",
+    intent: "scaffold target host-config emits Cursor, Claude Code and generic entries whose tool list names every real tool, so host config never drifts.",
+    steps: [
+      {
+        call: { tool: "scaffold", input: { target: "host-config", url: "https://strumentario.example/mcp" } },
+        expect: {
+          isError: false,
+          match: {
+            ok: true,
+            written: false,
+            files: [
+              { path: ".cursor/mcp.json", content: { $contains: "https://strumentario.example/mcp" } },
+              { path: ".mcp.json", content: { $contains: '"type": "http"' } },
+              {
+                path: "strumentario.mcp.json",
+                content: { $contains: '"name": "scaffold"' },
+              },
+            ],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: "scaffold-leaves-pages-alone",
+    kind: "tool",
+    category: "scaffold",
+    intent: "scaffold is not mutate: even with an outDir it creates no pages and changes none, and without write: true it writes no files.",
+    seed: [intro],
+    steps: [
+      {
+        call: { tool: "scaffold", input: { target: "client", outDir: "generated" } },
+        expect: { isError: false, match: { ok: true, written: false } },
+      },
+      {
+        call: { tool: "query", input: {} },
+        expect: { isError: false, match: { ok: true, total: 1, pages: [{ slug: "intro" }] } },
+      },
+    ],
+    after: [{ slug: "intro", exists: true, page: intro }],
+  },
+  {
+    id: "scaffold-write-needs-outdir",
+    kind: "tool",
+    category: "scaffold",
+    intent: "write: true without outDir is refused with an actionable error instead of writing somewhere implicit.",
+    steps: [
+      {
+        call: { tool: "scaffold", input: { target: "client", write: true } },
+        expect: {
+          isError: true,
+          match: { ok: false, written: false, error: { code: "invalid", message: { $contains: "outDir" } } },
+        },
+      },
+    ],
+  },
+
   // --- cli ---------------------------------------------------------------------
   {
     id: "cli-call-validate-json",
@@ -339,5 +420,24 @@ export const goldenCases: readonly GoldenCase[] = [
       stdoutJson: { ok: false, error: { code: "not_found", availableSlugs: ["intro"] } },
       stderrIncludes: "reported an error",
     },
+  },
+  {
+    id: "cli-call-scaffold-json",
+    kind: "cli",
+    category: "cli",
+    intent: "`strumentario call scaffold --json` returns the generated files on stdout; it is the only CLI path to scaffold.",
+    args: ["call", "scaffold", "--json", "--input", JSON.stringify({ target: "host-config" })],
+    expect: {
+      exitCode: 0,
+      stdoutJson: { ok: true, written: false, files: [{ path: ".cursor/mcp.json" }, { path: ".mcp.json" }, { path: "strumentario.mcp.json" }] },
+    },
+  },
+  {
+    id: "cli-call-scaffold-dry-run-never-writes",
+    kind: "cli",
+    category: "cli",
+    intent: "--dry-run forces write off for scaffold, so a dry run reports the files and writes none.",
+    args: ["call", "scaffold", "--json", "--dry-run", "--input", JSON.stringify({ target: "client", write: true, outDir: "never-written" })],
+    expect: { exitCode: 0, stdoutJson: { ok: true, written: false } },
   },
 ];

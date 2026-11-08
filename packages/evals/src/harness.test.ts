@@ -21,9 +21,9 @@ describe("golden dataset", () => {
     }
   });
 
-  it("covers query, mutate, validate, concurrency and CLI usage", () => {
+  it("covers query, mutate, validate, scaffold, concurrency and CLI usage", () => {
     const categories = new Set(goldenCases.map((goldenCase) => goldenCase.category));
-    expect([...categories].sort()).toEqual(["cli", "concurrency", "mutate", "query", "validate"]);
+    expect([...categories].sort()).toEqual(["cli", "concurrency", "mutate", "query", "scaffold", "validate"]);
   });
 
   it("exercises every tool contract the server publishes", () => {

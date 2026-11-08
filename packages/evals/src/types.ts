@@ -16,7 +16,7 @@ import type { ContentPrimitiveName } from "@strumentario/server";
  * current stored revision of that page when the step runs.
  */
 
-export type GoldenCategory = "query" | "mutate" | "validate" | "concurrency" | "cli";
+export type GoldenCategory = "query" | "mutate" | "validate" | "scaffold" | "concurrency" | "cli";
 
 export interface GoldenPage {
   title: string;

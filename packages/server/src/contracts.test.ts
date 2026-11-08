@@ -82,8 +82,8 @@ function canonicalContracts(contracts: readonly ToolContract[]): ToolContract[] 
 
 describe("tool contracts", () => {
   it("covers exactly the primitives the handbook domain declares, with stable names", () => {
-    expect(toolContracts.map((tool) => tool.name)).toEqual(["query", "mutate", "validate"]);
-    expect(handbookDomain.primitives).toEqual(["query", "mutate", "validate"]);
+    expect(toolContracts.map((tool) => tool.name)).toEqual(["query", "mutate", "validate", "scaffold"]);
+    expect(handbookDomain.primitives).toEqual(["query", "mutate", "validate", "scaffold"]);
   });
 
   it("matches every tool the MCP server registers (drift test)", async () => {

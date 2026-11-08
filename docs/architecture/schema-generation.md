@@ -37,6 +37,7 @@ From `handbookDomain` alone:
 - **MCP input and output schemas** for `query`, `mutate` and `validate` (`queryInputShape`, `mutateOutputShape`, ...), including the stored-page shape with `revision`.
 - **Tool contracts** — `toolContracts`: framework-neutral `{ name, title, description, annotations, inputSchema, outputSchema }` with plain JSON Schema (draft-07, exactly what `tools/list` serves). No zod or SDK types, so the CLI, a scaffold or any other surface can consume them from `@strumentario/server` without a private API.
 - **Change-journal contract** — `journalContract` (`uri`, `uriTemplate`, `entrySchema`, `pageSchema`) is generated from the same domain by `buildJournalDefinition`: the entry is keyed by `keyField` and reuses the `mutate` actions and error codes. See [docs/journal.md](../journal.md).
+- **Scaffold templates and the `scaffold` tool** — `scaffold.ts` generates a typed TypeScript client (`target: "client"`) from `toolContracts` and the domain, and MCP host entries for Cursor, Claude Code and a generic JSON form (`target: "host-config"`) that list every tool in `toolContracts`. Both are deterministic. The tool returns `{ path, content }` files in memory and writes only with `write: true` and `outDir` (refusing to overwrite unless `overwrite: true`; `outDir` must stay inside the server's working directory or `STRUMENTARIO_SCAFFOLD_ROOT`). `scaffold.test.ts` type-checks the generated client under `tsc`, including against the SDK `Client`, so a contract change that breaks the client fails a test.
 - **Tool registration metadata** — `server.ts` registers each tool from its generated definition; only the handlers are hand-written.
 
 Tool names and wire shapes are unchanged by this generation, so golden evals stay valid. Change a shape and the eval cases move in the same change.
@@ -53,7 +54,7 @@ Edit the field in `schema.ts`. The zod schema, resource JSON Schema, tool schema
 
 - Handlers: `query`, `mutate` and `validate` logic is still hand-written for the handbook store; the generator owns their shapes, not their behaviour.
 - Widget prop schemas (Phase 3A) and AI SDK tool definitions (Phase 3B) — both will read `toolContracts`.
-- Scaffold templates and the scaffold tool (Phase 4).
+- More scaffold targets (page, studio stub) and the repair loop (Phase 4).
 - Field kinds beyond strings (numbers, enums, references, arrays) and per-field descriptions in the resource JSON Schema.
 - Per-domain registration: `createMcpServer` registers the handbook domain only; the slug check in `mutate` still imports `SLUG_PATTERN` directly.
 
