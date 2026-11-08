@@ -49,6 +49,8 @@ function post(base: string, headers: Record<string, string> = {}): Promise<Respo
 describe("loadConfig", () => {
   it("defaults to port 3001 on loopback with auth off", () => {
     expect(loadConfig({})).toEqual({
+      transport: "http",
+      agent: undefined,
       port: DEFAULT_PORT,
       host: DEFAULT_HOST,
       authToken: undefined,
@@ -59,6 +61,8 @@ describe("loadConfig", () => {
 
   it("reads PORT, HOST and MCP_AUTH_TOKEN", () => {
     expect(loadConfig({ PORT: "4000", HOST: "0.0.0.0", MCP_AUTH_TOKEN: "s3" })).toEqual({
+      transport: "http",
+      agent: undefined,
       port: 4000,
       host: "0.0.0.0",
       authToken: "s3",

@@ -1,5 +1,7 @@
+import type { Readable, Writable } from "node:stream";
 import type { Server } from "node:http";
 import { loadConfig } from "./config.js";
+import { runStdioServer } from "./stdio.js";
 import { createMcpHttpServer, MCP_HTTP_PATH, shutdownHttpServer } from "./http.js";
 
 export interface RunServerOptions {
@@ -8,10 +10,15 @@ export interface RunServerOptions {
   signal: AbortSignal;
   log: (message: string) => void;
   error: (message: string) => void;
+  /** Serve over stdio instead of HTTP (same as `MCP_TRANSPORT=stdio`). */
+  stdio?: boolean | undefined;
+  /** Stdio streams; default to the process's. Only used in stdio mode. */
+  stdin?: Readable | undefined;
+  stdout?: Writable | undefined;
 }
 
 /**
- * Start the Streamable HTTP server from environment configuration and run it
+ * Start the server (Streamable HTTP, or stdio when selected) from environment configuration and run it
  * until `signal` aborts. Resolves with a process exit code: 0 after a clean
  * shutdown, 1 if the server could not start or shut down, 2 for bad config.
  * Shared by `serve.ts` and the `strumentario serve` command.
@@ -23,6 +30,17 @@ export async function runServer(options: RunServerOptions): Promise<number> {
   } catch (error) {
     options.error(`Invalid configuration: ${(error as Error).message}`);
     return 2;
+  }
+
+  if (options.stdio || config.transport === "stdio") {
+    return runStdioServer({
+      agent: config.agent,
+      signal: options.signal,
+      log: options.log,
+      error: options.error,
+      stdin: options.stdin,
+      stdout: options.stdout,
+    });
   }
 
   const server: Server = createMcpHttpServer({ authToken: config.authToken });

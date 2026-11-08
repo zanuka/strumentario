@@ -34,6 +34,8 @@ export interface ToolCallEvent {
 }
 
 export interface McpServerOptions {
+  /** Agent identity used when a call carries no `X-Strumentario-Agent` header (stdio has no headers). */
+  defaultAgent?: string | undefined;
   /** Observer invoked for each tool call, for attribution and tests. */
   onToolCall?: (event: ToolCallEvent) => void;
 }
@@ -51,6 +53,7 @@ export function getAgentId(
 export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer {
   const store = options.store ?? new FileSystemPageStore();
   const journal = options.journal ?? (store instanceof FileSystemPageStore ? new FileJournal(store.dir) : undefined);
+  const agentOf = (headers: Parameters<typeof getAgentId>[0]) => getAgentId(headers) ?? options.defaultAgent;
   const server = new McpServer({
     name: "strumentario",
     version: "0.0.1",
@@ -72,7 +75,7 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
     async ({ instance }, extra) => {
       options.onToolCall?.({
         tool: "validate",
-        agent: getAgentId(extra.requestInfo?.headers),
+        agent: agentOf(extra.requestInfo?.headers),
       });
       const structuredContent = validateHandbookPage(instance);
 
@@ -94,7 +97,7 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
     async (input, extra) => {
       options.onToolCall?.({
         tool: "query",
-        agent: getAgentId(extra.requestInfo?.headers),
+        agent: agentOf(extra.requestInfo?.headers),
       });
       const structuredContent = await queryPages(store, input as QueryInput);
 
@@ -112,7 +115,7 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
     async (input, extra) => {
       const structuredContent = await mutatePage(store, input as unknown as MutateInput, {
         journal,
-        agent: getAgentId(extra.requestInfo?.headers),
+        agent: agentOf(extra.requestInfo?.headers),
       });
 
       return {
@@ -129,7 +132,7 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
     async (input, extra) => {
       options.onToolCall?.({
         tool: "scaffold",
-        agent: getAgentId(extra.requestInfo?.headers),
+        agent: agentOf(extra.requestInfo?.headers),
       });
       const structuredContent = await scaffold(input as unknown as ScaffoldInput);
 

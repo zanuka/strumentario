@@ -23,7 +23,7 @@ export function getServerPackageInfo(): ServerPackageInfo {
   };
 }
 
-export { DEFAULT_HOST, DEFAULT_PORT, loadConfig, type ServerConfig } from "./config.js";
+export { DEFAULT_HOST, DEFAULT_PORT, loadConfig, TRANSPORTS, type ServerConfig, type Transport } from "./config.js";
 export {
   createMcpHttpServer,
   handleMcpHttpRequest,
@@ -33,6 +33,7 @@ export {
   type McpHttpOptions,
 } from "./http.js";
 export { runServer, type RunServerOptions } from "./run.js";
+export { runStdioServer, type RunStdioOptions } from "./stdio.js";
 export {
   HANDBOOK_PAGE_SCHEMA_URI,
   JOURNAL_URI,
