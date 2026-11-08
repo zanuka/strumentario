@@ -32,7 +32,7 @@ const DEFAULT_URL = `http://${DEFAULT_HOST}:${DEFAULT_PORT}/mcp`;
 const HELP = `strumentario — thin MCP client for the Strumentario server
 
 Usage:
-  strumentario serve                                Start the Streamable HTTP server
+  strumentario serve [--stdio]                      Start the Streamable HTTP server, or serve over stdio
   strumentario tools                                List tools and input schemas (from the server)
   strumentario call <tool> [--input '<json>' | --input-file <path>]
                                                     Call a tool; --help after <tool> shows its schema
@@ -45,6 +45,7 @@ Options:
   --token <token>   Bearer token (default: $STRUMENTARIO_TOKEN or $MCP_AUTH_TOKEN)
   --agent <id>      Agent identity, sent as the ${AGENT_HEADER} header (default: $STRUMENTARIO_AGENT)
   --json            Machine-readable output only on stdout; diagnostics go to stderr
+  --stdio           serve: speak MCP over stdin/stdout instead of HTTP (diagnostics go to stderr)
   --dry-run         serve: print the resolved config and exit. call: set dryRun: true when the tool accepts it, or write: false for scaffold
   -h, --help        Show this help
 
@@ -62,6 +63,7 @@ const OPTIONS = {
   input: { type: "string" },
   "input-file": { type: "string" },
   json: { type: "boolean" },
+  stdio: { type: "boolean" },
   "dry-run": { type: "boolean" },
   help: { type: "boolean", short: "h" },
 } as const;
@@ -72,6 +74,7 @@ interface Settings {
   agent: string | undefined;
   json: boolean;
   dryRun: boolean;
+  stdio: boolean;
 }
 
 function nonEmpty(value: string | undefined): string | undefined {
@@ -106,6 +109,7 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<ExitCode>
     agent: nonEmpty(values.agent) ?? nonEmpty(ctx.env.STRUMENTARIO_AGENT),
     json: values.json ?? false,
     dryRun: values["dry-run"] ?? false,
+    stdio: values.stdio ?? false,
   };
 
   try {
@@ -205,6 +209,11 @@ async function serve(ctx: CliContext, settings: Settings): Promise<ExitCode> {
       ctx.stderr(`Invalid configuration: ${errorMessage(error)}\n`);
       return EXIT.usage;
     }
+    if (settings.stdio || config.transport === "stdio") {
+      const stdioConfig = { transport: "stdio", agent: config.agent ?? null };
+      ctx.stdout(settings.json ? `${JSON.stringify(stdioConfig)}\n` : `Would serve MCP over stdio (agent: ${config.agent ?? "none"})\n`);
+      return EXIT.ok;
+    }
     const resolved = {
       host: config.host,
       port: config.port,
@@ -218,6 +227,7 @@ async function serve(ctx: CliContext, settings: Settings): Promise<ExitCode> {
   const code = await runServer({
     env: ctx.env,
     signal: ctx.signal ?? new AbortController().signal,
+    stdio: settings.stdio,
     // The server is long-running; its startup lines are diagnostics, not results.
     log: (message) => ctx.stderr(`${message}\n`),
     error: (message) => ctx.stderr(`${message}\n`),

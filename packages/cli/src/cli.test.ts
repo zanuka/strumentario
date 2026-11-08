@@ -100,6 +100,14 @@ describe("serve + call validate --json (end to end)", () => {
     expect(result.stderr).toMatch(/PORT must be/);
   });
 
+  it("serve --stdio --dry-run reports stdio without listening or touching stdout streams", async () => {
+    const result = await cli(["serve", "--stdio", "--dry-run", "--json"], { STRUMENTARIO_AGENT: "agent-x" });
+    expect(result.code).toBe(EXIT.ok);
+    expect(JSON.parse(result.stdout)).toEqual({ transport: "stdio", agent: "agent-x" });
+    const viaEnv = await cli(["serve", "--dry-run", "--json"], { MCP_TRANSPORT: "stdio" });
+    expect(JSON.parse(viaEnv.stdout)).toEqual({ transport: "stdio", agent: null });
+  });
+
   it("serve --dry-run prints the resolved config and does not listen", async () => {
     const result = await cli(["serve", "--dry-run", "--json"], { PORT: "4555", MCP_AUTH_TOKEN: "s3cret" });
     expect(result.code).toBe(EXIT.ok);

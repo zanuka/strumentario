@@ -142,6 +142,10 @@ This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp
 - `PORT` — listen port, default `3001`.
 - `HOST` — bind address, default `127.0.0.1` (loopback only).
 - `MCP_AUTH_TOKEN` — optional shared secret; when set, `/mcp` requires `Authorization: Bearer <token>`.
+- `MCP_TRANSPORT` — `http` (default) or `stdio`. Streamable HTTP stays the primary path; stdio is the same server and tools for hosts that spawn it as a child process, with no port. Equivalent to the `--stdio` flag.
+- `STRUMENTARIO_AGENT` — stdio only: the agent name recorded for calls (there are no headers over stdio).
+
+To use stdio, point the host at `node /abs/path/to/packages/server/dist/serve.js --stdio` (after `pnpm build`) with `STRUMENTARIO_DATA_DIR` set; many such processes can share one data directory. stdout carries only protocol messages. See [docs/server-transport-and-soak.md](docs/server-transport-and-soak.md#stdio-transport) for a host config.
 
 `GET /healthz` returns `200` for liveness checks. Send an optional `X-Strumentario-Agent` header to identify the calling agent. See [docs/server-transport-and-soak.md](docs/server-transport-and-soak.md) for the stateless-transport decision and soak results.
 
@@ -154,6 +158,7 @@ pnpm --filter @strumentario/cli build
 alias strumentario="node $PWD/packages/cli/dist/main.js"
 
 strumentario serve                                   # same config as `pnpm --filter @strumentario/server serve`
+strumentario serve --stdio                           # serve over stdin/stdout for hosts that spawn the server
 strumentario tools                                   # tools and input schemas, straight from tools/list
 strumentario call validate --json \
   --input '{"instance":{"title":"Getting started","slug":"getting-started","body":"Draft content."}}'

@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { handbookPageSchema, SLUG_PATTERN, type HandbookPage } from "./schema.js";
 
@@ -24,7 +24,8 @@ export interface PageStore {
   delete(slug: string): Promise<boolean>;
   /**
    * Runs `fn` while holding the writer lock for `slug`, so a read-check-write
-   * sequence cannot interleave with another writer to the same slug.
+   * sequence cannot interleave with another writer to the same slug, in this
+   * or another process sharing the same data directory.
    */
   withLock<T>(slug: string, fn: () => Promise<T>): Promise<T>;
   /** Looks up a recorded idempotent outcome; `undefined` when the key is unused. */
@@ -61,6 +62,16 @@ export function resolveDataDir(env: NodeJS.ProcessEnv = process.env): string {
 // Writer locks are process-wide and keyed by file path: the HTTP transport builds
 // a fresh server and store per request, so instance-level locks would not exclude.
 const writerQueues = new Map<string, Promise<unknown>>();
+
+// Across processes the lock is a directory created with mkdir (atomic, fails if it exists)
+// under `<dir>/.locks`. A holder that died leaves it behind, so a lock older than the stale
+// age is reclaimed; critical sections last milliseconds, so 30 s only means a crashed holder.
+const LOCK_DIR = ".locks";
+const LOCK_STALE_MS = 30_000;
+const LOCK_TIMEOUT_MS = 15_000;
+const LOCK_POLL_MS = 5;
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 function isNotFound(error: unknown): boolean {
   return (error as NodeJS.ErrnoException | undefined)?.code === "ENOENT";
@@ -169,7 +180,15 @@ export class FileSystemPageStore implements PageStore {
   async withLock<T>(slug: string, fn: () => Promise<T>): Promise<T> {
     const key = this.fileFor(slug);
     const previous = writerQueues.get(key) ?? Promise.resolve();
-    const run = previous.then(fn, fn);
+    const locked = async () => {
+      const release = await this.acquireFileLock(slug);
+      try {
+        return await fn();
+      } finally {
+        await release();
+      }
+    };
+    const run = previous.then(locked, locked);
     const tail = run.catch(() => undefined);
     writerQueues.set(key, tail);
     try {
@@ -178,6 +197,43 @@ export class FileSystemPageStore implements PageStore {
       if (writerQueues.get(key) === tail) {
         writerQueues.delete(key);
       }
+    }
+  }
+
+  private async acquireFileLock(slug: string): Promise<() => Promise<void>> {
+    const locks = path.join(this.dir, LOCK_DIR);
+    const lock = path.join(locks, `${slug}.lock`);
+    await mkdir(locks, { recursive: true });
+    const deadline = Date.now() + LOCK_TIMEOUT_MS;
+    for (;;) {
+      try {
+        await mkdir(lock);
+        return () => rm(lock, { recursive: true, force: true });
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+          throw error;
+        }
+      }
+      try {
+        if (Date.now() - (await stat(lock)).mtimeMs > LOCK_STALE_MS) {
+          // rename succeeds for exactly one reclaimer; the others see ENOENT and retry.
+          const stale = `${lock}.${randomUUID()}.stale`;
+          await rename(lock, stale);
+          await rm(stale, { recursive: true, force: true });
+          continue;
+        }
+      } catch (error) {
+        if (!isNotFound(error)) {
+          throw error;
+        }
+        continue;
+      }
+      if (Date.now() > deadline) {
+        throw new StoreError(
+          `Timed out waiting for the writer lock on "${slug}". Another process holds ${lock}; if no Strumentario process is running, delete that directory and retry.`,
+        );
+      }
+      await sleep(LOCK_POLL_MS + Math.floor(Math.random() * 15));
     }
   }
 

@@ -8,7 +8,7 @@ The journal answers "who changed what, and when" for a Strumentario store. Every
 
 ## File format
 
-JSON Lines: one object per line, UTF-8, each line ending in `\n`. Lines are written with a single append, queued per file within a process and appended with `O_APPEND`, so concurrent writers do not interleave or truncate lines. Entry lines are well under 4 KB: `slug`, `agent` and `idempotencyKey` are truncated at 200 characters.
+JSON Lines: one object per line, UTF-8, each line ending in `\n`. Lines are written with a single append, queued per file within a process and appended with `O_APPEND`, so concurrent writers, including separate stdio server processes on one data directory, do not interleave or truncate lines. Entry lines are well under 4 KB: `slug`, `agent` and `idempotencyKey` are truncated at 200 characters.
 
 ```json
 {"v":1,"ts":"2026-11-08T11:02:51.123Z","tool":"mutate","action":"update","slug":"getting-started","status":"applied","dryRun":false,"agent":"agent-a","idempotencyKey":"k-1","expectedRevision":"3f2a9c1d5e7b8a40","revisionBefore":"3f2a9c1d5e7b8a40","revisionAfter":"9b1e0c44d2a7f653","proposedRevision":null,"errorCode":null,"payload":{"bytes":212,"hash":"c04be9a1d77e3f08"}}
