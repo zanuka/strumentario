@@ -33,10 +33,12 @@ export interface DomainDefinition {
   slots: { one: string; many: string };
   /** Field that uniquely identifies one resource (a field name below). */
   keyField: string;
-  /** URI templates for the generated resources. */
+  /** URIs for the generated resources. */
   resources: {
     schemaUri: string;
     instanceTemplate: string;
+    /** Read-only change journal of mutate calls (query parameters `since` and `limit` are appended). */
+    journalUri: string;
   };
   fields: readonly StringFieldDefinition[];
   /** Which content primitives apply to this domain. */

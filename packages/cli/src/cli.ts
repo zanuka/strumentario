@@ -4,7 +4,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { McpError } from "@modelcontextprotocol/sdk/types.js";
-import { AGENT_HEADER, DEFAULT_HOST, DEFAULT_PORT, loadConfig, runServer } from "@strumentario/server";
+import { AGENT_HEADER, DEFAULT_HOST, DEFAULT_PORT, JOURNAL_URI, loadConfig, runServer } from "@strumentario/server";
 
 /** Stable process exit codes; documented in the README. */
 export const EXIT = {
@@ -37,6 +37,8 @@ Usage:
   strumentario call <tool> [--input '<json>' | --input-file <path>]
                                                     Call a tool; --help after <tool> shows its schema
   strumentario resource <uri>                       Read a resource
+  strumentario journal [--since <cursor>] [--limit <n>]
+                                                    Read the change journal of mutate calls; pass the printed cursor as --since to continue
 
 Options:
   --url <url>       MCP endpoint (default: $STRUMENTARIO_URL or ${DEFAULT_URL})
@@ -55,6 +57,8 @@ const OPTIONS = {
   url: { type: "string" },
   token: { type: "string" },
   agent: { type: "string" },
+  since: { type: "string" },
+  limit: { type: "string" },
   input: { type: "string" },
   "input-file": { type: "string" },
   json: { type: "boolean" },
@@ -130,6 +134,11 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<ExitCode>
           throw new UsageError("resource needs a URI, for example strumentario://pages/<slug>.");
         }
         return await withClient(ctx, settings, (client) => resource(ctx, settings, client, uri));
+      }
+      case "journal": {
+        expectArgs(command, rest, 0);
+        const uri = journalUri(values.since, values.limit);
+        return await withClient(ctx, settings, (client) => journal(ctx, settings, client, uri));
       }
       default:
         throw new UsageError(`Unknown command "${command}". Run \`strumentario --help\` for the list.`);
@@ -337,6 +346,34 @@ async function call(
     ctx.stderr(`Tool "${name}" reported the input as invalid; see the errors in the output.\n`);
     return EXIT.tool;
   }
+  return EXIT.ok;
+}
+
+function journalUri(since: string | undefined, limit: string | undefined): string {
+  const params: string[] = [];
+  if (since !== undefined) {
+    if (!/^\d+$/.test(since)) {
+      throw new UsageError(`--since "${since}" is not a journal cursor. Use the cursor printed by a previous \`strumentario journal\`.`);
+    }
+    params.push(`since=${since}`);
+  }
+  if (limit !== undefined) {
+    if (!/^\d+$/.test(limit) || Number(limit) < 1) {
+      throw new UsageError(`--limit "${limit}" must be a positive integer.`);
+    }
+    params.push(`limit=${limit}`);
+  }
+  return params.length > 0 ? `${JOURNAL_URI}?${params.join("&")}` : JOURNAL_URI;
+}
+
+async function journal(ctx: CliContext, settings: Settings, client: Client, uri: string): Promise<ExitCode> {
+  const result = await client.readResource({ uri });
+  const item = result.contents[0];
+  if (!item || !("text" in item)) {
+    ctx.stderr(`The server returned no journal at ${uri}. Check that it is a Strumentario server with the default file store.\n`);
+    return EXIT.tool;
+  }
+  emit(ctx, settings, JSON.parse(item.text));
   return EXIT.ok;
 }
 

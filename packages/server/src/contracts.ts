@@ -23,6 +23,13 @@ export const MUTATE_ERROR_CODES = [
   "store_error",
 ] as const;
 
+export const JOURNAL_DEFAULT_LIMIT = 100;
+export const JOURNAL_MAX_LIMIT = 1000;
+export const JOURNAL_VERSION = 1;
+
+/** applied/dry_run/replayed are successes; conflict is a stale revision; rejected is every other refusal. */
+export const JOURNAL_STATUSES = ["applied", "dry_run", "replayed", "conflict", "rejected"] as const;
+
 export type ZodShape = Record<string, z.ZodType>;
 
 export interface ToolAnnotations {
@@ -219,6 +226,65 @@ export function buildValidateDefinition(domain: DomainDefinition): ToolDefinitio
   };
 }
 
+export interface JournalDefinition {
+  /** Resource URI without query parameters. */
+  uri: string;
+  /** RFC 6570 template served for the resource: `uri` plus `{?since,limit}`. */
+  uriTemplate: string;
+  /** Shape of one journal line. */
+  entryShape: ZodShape;
+  /** Shape of the resource payload: a page of entries plus the cursor to continue from. */
+  pageShape: ZodShape;
+}
+
+const nullableString = (description: string) => z.string().nullable().describe(description);
+
+/**
+ * The change-journal resource, generated from the same domain as the tools: the
+ * entry is keyed by the domain's keyField and its error codes and actions are
+ * the mutate tool's. Journal entries never carry resource bodies, only hashes and sizes.
+ */
+export function buildJournalDefinition(domain: DomainDefinition): JournalDefinition {
+  const { one } = domain.slots;
+  const entryShape: ZodShape = {
+    v: z.literal(JOURNAL_VERSION).describe("Journal format version."),
+    ts: z.string().describe("ISO 8601 UTC time the outcome was recorded."),
+    tool: z.literal("mutate"),
+    action: z.enum(MUTATE_ACTIONS),
+    [domain.keyField]: z.string().describe(`${capitalize(domain.keyField)} the call targeted (truncated at 200 characters).`),
+    status: z.enum(JOURNAL_STATUSES),
+    dryRun: z.boolean().describe("True when the call wrote nothing because it was a dry run."),
+    agent: nullableString("Agent identity from the X-Strumentario-Agent header; null when the caller sent none."),
+    idempotencyKey: nullableString("The idempotencyKey the caller passed, if any."),
+    expectedRevision: nullableString(`The expectedRevision the caller passed, if any.`),
+    revisionBefore: nullableString(
+      `Revision of the ${one} before the call; null when none existed, or for a replay (a replay does not read the store).`,
+    ),
+    revisionAfter: nullableString(
+      `Revision of the ${one} after the call. Equals revisionBefore unless the call applied a change; null after a delete or for a replay.`,
+    ),
+    proposedRevision: nullableString(`For a dry run, the revision the ${one} would have had.`),
+    errorCode: z.enum(MUTATE_ERROR_CODES).nullable().describe("The mutate error code for conflict and rejected entries."),
+    payload: z
+      .object({
+        bytes: z.number().int().describe(`Size in bytes of the submitted ${one} as JSON.`),
+        hash: z.string().describe(`Content hash of the submitted ${one} as JSON.`),
+      })
+      .nullable()
+      .describe(`Size and hash of the ${one} the caller submitted; null for delete or when none was sent.`),
+  };
+  return {
+    uri: domain.resources.journalUri,
+    uriTemplate: `${domain.resources.journalUri}{?since,limit}`,
+    entryShape,
+    pageShape: {
+      entries: z.array(z.object(entryShape)),
+      cursor: z.string().describe("Pass as `since` to read the entries after this page."),
+      skipped: z.number().int().describe("Corrupt journal lines passed over in this page."),
+    },
+  };
+}
+
 const BUILDERS: Record<ContentPrimitiveName, (domain: DomainDefinition) => ToolDefinition> = {
   query: buildQueryDefinition,
   mutate: buildMutateDefinition,
@@ -248,6 +314,16 @@ export const handbookToolDefinitions = buildToolDefinitions(handbookDomain);
 
 /** Contracts for the handbook-page domain, exported for the CLI, scaffold and later surfaces. */
 export const toolContracts: readonly ToolContract[] = handbookToolDefinitions.map(toToolContract);
+
+export const journalDefinition = buildJournalDefinition(handbookDomain);
+
+/** Framework-neutral journal contract: URI plus plain JSON Schema for an entry and a resource page. */
+export const journalContract = {
+  uri: journalDefinition.uri,
+  uriTemplate: journalDefinition.uriTemplate,
+  entrySchema: shapeToJsonSchema(journalDefinition.entryShape, "output"),
+  pageSchema: shapeToJsonSchema(journalDefinition.pageShape, "output"),
+} as const;
 
 export function getToolDefinition(name: ContentPrimitiveName): ToolDefinition {
   const definition = handbookToolDefinitions.find((tool) => tool.name === name);
