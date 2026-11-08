@@ -35,6 +35,7 @@ export {
 export { runServer, type RunServerOptions } from "./run.js";
 export {
   HANDBOOK_PAGE_SCHEMA_URI,
+  JOURNAL_URI,
   handbookDomain,
   handbookPageJsonSchema,
   handbookPageSchema,
@@ -52,8 +53,13 @@ export {
   type StringFieldDefinition,
 } from "./domain.js";
 export {
+  buildJournalDefinition,
   buildToolContracts,
   buildToolDefinitions,
+  JOURNAL_DEFAULT_LIMIT,
+  JOURNAL_MAX_LIMIT,
+  JOURNAL_STATUSES,
+  journalContract,
   toolContracts,
   toToolContract,
   type ToolAnnotations,
@@ -72,7 +78,18 @@ export {
   validateHandbookPage,
   type HandbookPageValidationResult,
 } from "./validate.js";
-export { mutatePage, type MutateInput, type MutateResult } from "./mutate.js";
+export { mutatePage, type MutateInput, type MutateOptions, type MutateResult } from "./mutate.js";
+export {
+  FileJournal,
+  JOURNAL_FILE,
+  journalEntryFor,
+  JournalError,
+  type Journal,
+  type JournalEntry,
+  type JournalPage,
+  type JournalReadOptions,
+  type JournalStatus,
+} from "./journal.js";
 export { queryPages, type QueryInput, type QueryResult } from "./query.js";
 export {
   DATA_DIR_ENV,

@@ -24,7 +24,7 @@ A `DomainDefinition` (`domain.ts`) declares:
 |-----|---------|
 | `name`, `noun`, `slots` | Identifier, human noun for titles and descriptions, and the wire property names (`page` / `pages`) |
 | `keyField` | Field that identifies one resource (`slug`) |
-| `resources` | URI of the schema resource and the URI template for instances |
+| `resources` | URI of the schema resource, the URI template for instances, and the URI of the change journal |
 | `fields` | Typed fields with constraints and actionable error messages |
 | `primitives` | Which of `query` / `mutate` / `validate` apply |
 
@@ -36,6 +36,7 @@ From `handbookDomain` alone:
 - **Resource JSON Schema** — `handbookPageJsonSchema`, served at `strumentario://schemas/handbook-page`.
 - **MCP input and output schemas** for `query`, `mutate` and `validate` (`queryInputShape`, `mutateOutputShape`, ...), including the stored-page shape with `revision`.
 - **Tool contracts** — `toolContracts`: framework-neutral `{ name, title, description, annotations, inputSchema, outputSchema }` with plain JSON Schema (draft-07, exactly what `tools/list` serves). No zod or SDK types, so the CLI, a scaffold or any other surface can consume them from `@strumentario/server` without a private API.
+- **Change-journal contract** — `journalContract` (`uri`, `uriTemplate`, `entrySchema`, `pageSchema`) is generated from the same domain by `buildJournalDefinition`: the entry is keyed by `keyField` and reuses the `mutate` actions and error codes. See [docs/journal.md](../journal.md).
 - **Tool registration metadata** — `server.ts` registers each tool from its generated definition; only the handlers are hand-written.
 
 Tool names and wire shapes are unchanged by this generation, so golden evals stay valid. Change a shape and the eval cases move in the same change.

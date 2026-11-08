@@ -207,6 +207,42 @@ describe("resource", () => {
   });
 });
 
+describe("journal", () => {
+  const write = (slug: string) => ({ action: "create", slug, page: { title: slug, slug, body: "Body." }, dryRun: false });
+
+  it("prints journal entries with the agent and continues from a cursor", async () => {
+    const url = await start();
+    for (const slug of ["one", "two", "three"]) {
+      const called = await cli(["call", "mutate", "--json", "--url", url, "--agent", "cli-agent", "--input", JSON.stringify(write(slug))]);
+      expect(called.code).toBe(EXIT.ok);
+    }
+
+    const first = await cli(["journal", "--json", "--url", url, "--limit", "2"]);
+    expect(first.code).toBe(EXIT.ok);
+    const page = JSON.parse(first.stdout) as { entries: { slug: string; agent: string; status: string }[]; cursor: string };
+    expect(page.entries.map((e) => [e.slug, e.agent, e.status])).toEqual([
+      ["one", "cli-agent", "applied"],
+      ["two", "cli-agent", "applied"],
+    ]);
+
+    const rest = await cli(["journal", "--json", "--url", url, "--since", page.cursor]);
+    expect((JSON.parse(rest.stdout) as { entries: { slug: string }[] }).entries.map((e) => e.slug)).toEqual(["three"]);
+  });
+
+  it("rejects a malformed cursor or limit as a usage error", async () => {
+    expect((await cli(["journal", "--since", "abc"])).code).toBe(EXIT.usage);
+    expect((await cli(["journal", "--limit", "0"])).code).toBe(EXIT.usage);
+    expect((await cli(["journal", "extra"])).code).toBe(EXIT.usage);
+  });
+
+  it("exits 1 with the server's explanation for a cursor past the end", async () => {
+    const url = await start();
+    const result = await cli(["journal", "--url", url, "--since", "99"]);
+    expect(result.code).toBe(EXIT.tool);
+    expect(result.stderr).toMatch(/past the end|no journal/);
+  });
+});
+
 describe("exit codes", () => {
   it("3 when the connection is refused, with nothing on stdout", async () => {
     const port = await freePort();

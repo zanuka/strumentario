@@ -4,6 +4,8 @@ import { buildResourceShape, defineDomain, type ResourceOf } from "./domain.js";
 export const HANDBOOK_PAGE_SCHEMA_URI =
   "strumentario://schemas/handbook-page" as const;
 
+export const JOURNAL_URI = "strumentario://journal" as const;
+
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** The first (and currently only) domain. Everything else is generated from this. */
@@ -15,6 +17,7 @@ export const handbookDomain = defineDomain({
   resources: {
     schemaUri: HANDBOOK_PAGE_SCHEMA_URI,
     instanceTemplate: "strumentario://pages/{slug}",
+    journalUri: JOURNAL_URI,
   },
   fields: [
     {

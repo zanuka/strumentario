@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { getToolDefinition } from "./contracts.js";
+import { journalEntryFor, type Journal } from "./journal.js";
 import { handbookPageSchema, SLUG_PATTERN } from "./schema.js";
 import { revisionOf, serializePage, type PageStore, type StoredPage } from "./store.js";
 import { validateHandbookPage } from "./validate.js";
@@ -16,6 +17,15 @@ export interface MutateInput {
   expectedRevision?: string | undefined;
   overwrite?: boolean | undefined;
   idempotencyKey?: string | undefined;
+}
+
+export interface MutateOptions {
+  /** Where to record this call's outcome (applied, dry run, replay, conflict or rejection). */
+  journal?: Journal | undefined;
+  /** Agent identity to attribute the call to in the journal. */
+  agent?: string | undefined;
+  /** Called when the journal cannot be written; the mutation outcome is still returned. Defaults to stderr. */
+  onJournalError?: (error: unknown) => void;
 }
 
 type ErrorCode = NonNullable<MutateResult["error"]>["code"];
@@ -57,8 +67,16 @@ function fingerprintOf(input: MutateInput): string {
  * Validation uses the same function as the validate tool. Writes happen only with
  * `dryRun: false`, under the slug's writer lock, with the revision checked inside
  * the lock so concurrent writers based on one revision cannot both succeed.
+ *
+ * With `options.journal`, every outcome is appended to the journal (under the same
+ * lock for real writes, so entries follow the order changes were applied). A journal
+ * failure is reported through `onJournalError` and never changes the returned result.
  */
-export async function mutatePage(store: PageStore, input: MutateInput): Promise<MutateResult> {
+export async function mutatePage(
+  store: PageStore,
+  input: MutateInput,
+  options: MutateOptions = {},
+): Promise<MutateResult> {
   const dryRun = input.dryRun ?? true;
   const base = { action: input.action, slug: input.slug, dryRun };
   const fail = (
@@ -66,6 +84,17 @@ export async function mutatePage(store: PageStore, input: MutateInput): Promise<
     message: string,
     extra: Partial<NonNullable<MutateResult["error"]>> = {},
   ): MutateResult => ({ ok: false, ...base, error: { code, message, ...extra } });
+
+  const record = async (result: MutateResult): Promise<MutateResult> => {
+    if (options.journal) {
+      try {
+        await options.journal.append(journalEntryFor(input, result, options.agent));
+      } catch (error) {
+        (options.onJournalError ?? defaultJournalError)(error);
+      }
+    }
+    return result;
+  };
 
   try {
     // Idempotency applies to real writes only; a dry run is already side-effect free.
@@ -162,8 +191,14 @@ export async function mutatePage(store: PageStore, input: MutateInput): Promise<
     };
 
     // Dry runs read only; real writes (and their idempotency check) run under the slug lock.
-    return dryRun ? await apply() : await store.withLock(input.slug, run);
+    return dryRun ? await record(await apply()) : await store.withLock(input.slug, async () => record(await run()));
   } catch (error) {
-    return fail("store_error", error instanceof Error ? error.message : String(error));
+    return record(fail("store_error", error instanceof Error ? error.message : String(error)));
   }
+}
+
+function defaultJournalError(error: unknown): void {
+  console.error(
+    `Strumentario could not write the change journal: ${error instanceof Error ? error.message : String(error)}. The change itself was not affected; fix the data directory permissions or free disk space, then retry.`,
+  );
 }
