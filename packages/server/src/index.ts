@@ -59,6 +59,8 @@ export {
   JOURNAL_DEFAULT_LIMIT,
   JOURNAL_MAX_LIMIT,
   JOURNAL_STATUSES,
+  SCAFFOLD_DEFAULT_URL,
+  SCAFFOLD_TARGETS,
   journalContract,
   toolContracts,
   toToolContract,
@@ -90,6 +92,17 @@ export {
   type JournalReadOptions,
   type JournalStatus,
 } from "./journal.js";
+export {
+  generateScaffoldFiles,
+  scaffold,
+  SCAFFOLD_ROOT_ENV,
+  type ScaffoldError,
+  type ScaffoldFile,
+  type ScaffoldInput,
+  type ScaffoldOptions,
+  type ScaffoldResult,
+  type ScaffoldTarget,
+} from "./scaffold.js";
 export { queryPages, type QueryInput, type QueryResult } from "./query.js";
 export {
   DATA_DIR_ENV,

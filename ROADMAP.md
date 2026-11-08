@@ -102,7 +102,7 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 - [x] Braintrust experiment path wired behind `BRAINTRUST_API_KEY` / `BRAINTRUST_PROJECT` (`pnpm eval`, exit code reflects pass/fail). The SDK call is covered by tests with the SDK mocked; a live run against a real project is still to be recorded. Upload of the golden cases as a standalone Braintrust dataset is not done: each experiment carries them inline.
 - [x] Code scorers: tool choice, output-schema validity, no unexpected side effect (dry runs), concurrency safety (`packages/evals/src/scorers.ts`)
 - [x] CI job documented and failing on regressions (`.github/workflows/evals.yml`); first checked-in experiment summary in [`docs/evals/`](docs/evals/2026-11-08-baseline.md) (local scorer run with a deliberate regression shown red then green)
-- [ ] Golden cases cover the content primitives (query / mutate / validate done, incl. concurrency and CLI; scaffold-oriented paths land with the scaffold tool)
+- [x] Golden cases cover the content primitives (query / mutate / validate / scaffold, incl. concurrency and CLI)
 - [ ] Tag `v0.2.0` — “prompt/tool changes are measurable”
 
 **Exit criteria:** a reviewer can run the eval suite from docs and see a pass/fail that would catch a real regression in tool selection or output shape. Public experiment summary exists before (or with) the first polished widget demo.

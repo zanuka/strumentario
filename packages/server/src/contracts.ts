@@ -23,6 +23,13 @@ export const MUTATE_ERROR_CODES = [
   "store_error",
 ] as const;
 
+export const SCAFFOLD_TARGETS = ["client", "host-config"] as const;
+
+export const SCAFFOLD_ERROR_CODES = ["invalid", "exists", "write_error"] as const;
+
+/** Default MCP endpoint written into generated host config; matches `strumentario serve`. */
+export const SCAFFOLD_DEFAULT_URL = "http://127.0.0.1:3001/mcp";
+
 export const JOURNAL_DEFAULT_LIMIT = 100;
 export const JOURNAL_MAX_LIMIT = 1000;
 export const JOURNAL_VERSION = 1;
@@ -226,6 +233,75 @@ export function buildValidateDefinition(domain: DomainDefinition): ToolDefinitio
   };
 }
 
+export function buildScaffoldDefinition(domain: DomainDefinition): ToolDefinition {
+  const { many } = domain.slots;
+  const file = z.object({
+    path: z.string().describe("Path relative to the output directory, with forward slashes."),
+    content: z.string(),
+  });
+  return {
+    name: "scaffold",
+    title: "Scaffold client or host config",
+    description: `Generate code or config from the Strumentario schema: target "client" is a typed TypeScript client for ${domain.noun}s, target "host-config" is MCP server entries (Cursor, Claude Code, generic JSON) listing the real tool names. Returns the files in memory as { path, content } and writes nothing unless write: true with outDir; existing files are never replaced unless overwrite: true. It never reads or changes ${many} in the store: use mutate to create, update or delete ${many} and query to read them. Output is deterministic.`,
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    inputShape: {
+      target: z
+        .enum(SCAFFOLD_TARGETS)
+        .describe(
+          `client: typed TypeScript client module for ${domain.noun}s. host-config: MCP server entries for Cursor, Claude Code and a generic JSON form.`,
+        ),
+      url: z
+        .string()
+        .min(1)
+        .optional()
+        .describe(`host-config only: MCP endpoint to write into the entries (default ${SCAFFOLD_DEFAULT_URL}).`),
+      auth: z
+        .boolean()
+        .optional()
+        .describe(
+          "host-config only: add a bearer Authorization header read from the MCP_AUTH_TOKEN environment variable. Default false.",
+        ),
+      write: z
+        .boolean()
+        .optional()
+        .describe("Default false: return the files and write nothing. Pass true, with outDir, to write them."),
+      outDir: z
+        .string()
+        .min(1)
+        .optional()
+        .describe(
+          "Required when write is true. Directory to write into, relative to the server's scaffold root (its working directory unless STRUMENTARIO_SCAFFOLD_ROOT is set); it must stay inside that root.",
+        ),
+      overwrite: z
+        .boolean()
+        .optional()
+        .describe("Allow write to replace files that already exist. Default false: any existing file refuses the whole write."),
+    },
+    outputShape: {
+      ok: z.boolean(),
+      target: z.enum(SCAFFOLD_TARGETS),
+      files: z.array(file).describe("The generated files, in a stable order. Present on success."),
+      written: z.boolean().describe("True only when the files were written to disk."),
+      outDir: z.string().optional().describe("Absolute directory the files were written to, when written."),
+      error: z
+        .object({
+          code: z.enum(SCAFFOLD_ERROR_CODES),
+          message: z.string(),
+          existing: z
+            .array(z.string())
+            .optional()
+            .describe("Paths that already exist, set when code is exists."),
+        })
+        .optional(),
+    },
+  };
+}
+
 export interface JournalDefinition {
   /** Resource URI without query parameters. */
   uri: string;
@@ -289,6 +365,7 @@ const BUILDERS: Record<ContentPrimitiveName, (domain: DomainDefinition) => ToolD
   query: buildQueryDefinition,
   mutate: buildMutateDefinition,
   validate: buildValidateDefinition,
+  scaffold: buildScaffoldDefinition,
 };
 
 /** Tool definitions (contract + zod shapes) for every primitive the domain declares. */

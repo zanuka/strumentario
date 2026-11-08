@@ -38,7 +38,7 @@ Braintrust also gets `expectations_met`, the harness verdict on the `expect`/`af
   - **CLI cases** start the Streamable HTTP server on a free port and run the real `strumentario` CLI (`runCli`) against it, checking exit code, `--json` stdout and stderr.
 - Tool names are checked against the exported `toolContracts` from `@strumentario/server`; a misspelled tool fails the case.
 
-Categories: `query`, `validate`, `mutate`, `concurrency` (parallel calls, races, idempotent retries) and `cli`. Scaffold cases arrive with the scaffold tool (issue #11).
+Categories: `query`, `validate`, `mutate`, `concurrency` (parallel calls, races, idempotent retries) `scaffold` (files returned in memory, nothing written without `write: true`, no effect on pages) and `cli`.
 
 ## Add a case
 

@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
@@ -114,7 +114,7 @@ describe("tools and call", () => {
     const result = await cli(["tools", "--json", "--url", url]);
     expect(result.code).toBe(EXIT.ok);
     const { tools } = JSON.parse(result.stdout) as { tools: { name: string; inputSchema: unknown }[] };
-    expect(tools.map((t) => t.name).sort()).toEqual(["mutate", "query", "validate"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["mutate", "query", "scaffold", "validate"]);
     expect(tools.every((t) => typeof t.inputSchema === "object")).toBe(true);
   });
 
@@ -160,6 +160,49 @@ describe("tools and call", () => {
     const url = await start();
     await cli(["call", "validate", "--url", url, "--agent", "agent-7", "--input", JSON.stringify({ instance: VALID_PAGE })]);
     expect(calls).toEqual([{ tool: "validate", agent: "agent-7" }]);
+  });
+});
+
+describe("scaffold", () => {
+  it("call scaffold returns files and writes nothing by default", async () => {
+    const url = await start();
+    const result = await cli(["call", "scaffold", "--json", "--url", url, "--input", JSON.stringify({ target: "client", outDir: "gen" })]);
+    expect(result.code).toBe(EXIT.ok);
+    const out = JSON.parse(result.stdout) as { ok: boolean; written: boolean; files: { path: string }[] };
+    expect(out).toMatchObject({ ok: true, written: false });
+    expect(out.files.map((file) => file.path)).toEqual(["strumentario-client.ts"]);
+    await expect(readdir(path.join(dataDir, "gen"))).rejects.toThrow();
+  });
+
+  it("call scaffold writes only with write: true and refuses to overwrite", async () => {
+    process.env.STRUMENTARIO_SCAFFOLD_ROOT = dataDir;
+    try {
+      const url = await start();
+      const input = JSON.stringify({ target: "host-config", write: true, outDir: "host" });
+      const first = await cli(["call", "scaffold", "--json", "--url", url, "--input", input]);
+      expect(first.code).toBe(EXIT.ok);
+      expect(await readdir(path.join(dataDir, "host"))).toContain(".mcp.json");
+
+      const again = await cli(["call", "scaffold", "--json", "--url", url, "--input", input]);
+      expect(again.code).toBe(EXIT.tool);
+      expect(JSON.parse(again.stdout)).toMatchObject({ ok: false, error: { code: "exists" } });
+    } finally {
+      delete process.env.STRUMENTARIO_SCAFFOLD_ROOT;
+    }
+  });
+
+  it("--dry-run forces write off", async () => {
+    process.env.STRUMENTARIO_SCAFFOLD_ROOT = dataDir;
+    try {
+      const url = await start();
+      const input = JSON.stringify({ target: "client", write: true, outDir: "dry" });
+      const result = await cli(["call", "scaffold", "--dry-run", "--json", "--url", url, "--input", input]);
+      expect(result.code).toBe(EXIT.ok);
+      expect(JSON.parse(result.stdout)).toMatchObject({ ok: true, written: false });
+      await expect(readdir(path.join(dataDir, "dry"))).rejects.toThrow();
+    } finally {
+      delete process.env.STRUMENTARIO_SCAFFOLD_ROOT;
+    }
   });
 });
 

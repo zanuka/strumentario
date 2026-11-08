@@ -45,7 +45,7 @@ Options:
   --token <token>   Bearer token (default: $STRUMENTARIO_TOKEN or $MCP_AUTH_TOKEN)
   --agent <id>      Agent identity, sent as the ${AGENT_HEADER} header (default: $STRUMENTARIO_AGENT)
   --json            Machine-readable output only on stdout; diagnostics go to stderr
-  --dry-run         serve: print the resolved config and exit. call: set dryRun: true when the tool accepts it
+  --dry-run         serve: print the resolved config and exit. call: set dryRun: true when the tool accepts it, or write: false for scaffold
   -h, --help        Show this help
 
 Exit codes: 0 success, 1 tool or validation error, 2 usage error, 3 connection or auth error.
@@ -325,12 +325,15 @@ async function call(
 ): Promise<ExitCode> {
   let args = input;
   if (settings.dryRun) {
-    // Generic and schema-driven: only tools that declare a dryRun input get it forced on.
+    // Generic and schema-driven: a tool that declares dryRun gets it forced on; one that
+    // declares write (scaffold) gets it forced off. Either way nothing is written.
     const { tools: list } = await client.listTools();
     const tool = list.find((candidate) => candidate.name === name);
     const properties = (tool?.inputSchema as { properties?: Record<string, unknown> } | undefined)?.properties;
     if (properties && "dryRun" in properties) {
       args = { ...input, dryRun: true };
+    } else if (properties && "write" in properties) {
+      args = { ...input, write: false };
     }
   }
 

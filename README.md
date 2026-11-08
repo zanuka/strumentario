@@ -159,11 +159,12 @@ strumentario call validate --json \
   --input '{"instance":{"title":"Getting started","slug":"getting-started","body":"Draft content."}}'
 strumentario call mutate --input-file page.json      # dry-run unless the input says "dryRun": false
 strumentario call mutate --help                      # description and schema come from the server
+strumentario call scaffold --input '{"target":"host-config"}'   # typed client or host config, generated from the schema; returns files, writes nothing
 strumentario resource strumentario://schemas/handbook-page
 strumentario journal --limit 20                      # who changed what, from the change journal (see docs/journal.md)
 ```
 
-Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/mcp`), `--token` (default `$STRUMENTARIO_TOKEN` or `$MCP_AUTH_TOKEN`), `--agent <id>` (sent as `X-Strumentario-Agent`; default `$STRUMENTARIO_AGENT`), `--json` (only the result on stdout, diagnostics on stderr), `--dry-run` (`serve`: print the resolved config and exit; `call`: force `dryRun: true` for tools that accept it).
+Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/mcp`), `--token` (default `$STRUMENTARIO_TOKEN` or `$MCP_AUTH_TOKEN`), `--agent <id>` (sent as `X-Strumentario-Agent`; default `$STRUMENTARIO_AGENT`), `--json` (only the result on stdout, diagnostics on stderr), `--dry-run` (`serve`: print the resolved config and exit; `call`: force `dryRun: true` for tools that accept it, or `write: false` for `scaffold`).
 
 | Exit code | Meaning |
 | --- | --- |

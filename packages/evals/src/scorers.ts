@@ -141,7 +141,7 @@ export const outputSchemaValid: Scorer = ({ case: goldenCase, result }) => {
 // --- no_unexpected_side_effect ---------------------------------------------------
 
 /**
- * Steps that must not change the store (query, validate, and mutate unless dryRun is explicitly false)
+ * Steps that must not change the store (query, validate, scaffold, and mutate unless dryRun is explicitly false)
  * leave it exactly as it was, and dry-run mutations report `dryRun: true`.
  */
 export const noUnexpectedSideEffect: Scorer = ({ case: goldenCase, result }) => {
@@ -173,6 +173,8 @@ export const noUnexpectedSideEffect: Scorer = ({ case: goldenCase, result }) => 
 
 function isReadOnly(call: CallRecord): boolean {
   if (call.tool === "query" || call.tool === "validate") return true;
+  // scaffold returns files and only touches the filesystem when asked with write: true; it never touches the store.
+  if (call.tool === "scaffold") return true;
   // mutate defaults to a dry run; only an explicit dryRun:false is allowed to write.
   return call.tool === "mutate" && call.input.dryRun !== false;
 }

@@ -12,6 +12,7 @@ import {
 // the drift test (contracts.test.ts) keeps shape and handler contract aligned.
 import { mutatePage, type MutateInput } from "./mutate.js";
 import { queryPages, type QueryInput } from "./query.js";
+import { scaffold, type ScaffoldInput } from "./scaffold.js";
 import { FileSystemPageStore, type PageStore } from "./store.js";
 import { validateHandbookPage } from "./validate.js";
 
@@ -113,6 +114,24 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
         journal,
         agent: getAgentId(extra.requestInfo?.headers),
       });
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(structuredContent) }],
+        structuredContent,
+        ...(structuredContent.ok ? {} : { isError: true }),
+      };
+    },
+  );
+
+  server.registerTool(
+    "scaffold",
+    register(getToolDefinition("scaffold")),
+    async (input, extra) => {
+      options.onToolCall?.({
+        tool: "scaffold",
+        agent: getAgentId(extra.requestInfo?.headers),
+      });
+      const structuredContent = await scaffold(input as unknown as ScaffoldInput);
 
       return {
         content: [{ type: "text", text: JSON.stringify(structuredContent) }],
