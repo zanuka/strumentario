@@ -54,6 +54,8 @@ describe("loadConfig", () => {
       port: DEFAULT_PORT,
       host: DEFAULT_HOST,
       authToken: undefined,
+      readToken: undefined,
+      writeToken: undefined,
     });
     expect(DEFAULT_PORT).toBe(3001);
     expect(DEFAULT_HOST).toBe("127.0.0.1");
@@ -66,11 +68,18 @@ describe("loadConfig", () => {
       port: 4000,
       host: "0.0.0.0",
       authToken: "s3",
+      readToken: undefined,
+      writeToken: undefined,
     });
   });
 
   it("treats an empty token as unset and rejects a bad port", () => {
     expect(loadConfig({ MCP_AUTH_TOKEN: "" }).authToken).toBeUndefined();
+    expect(loadConfig({ MCP_READ_TOKEN: " ", MCP_WRITE_TOKEN: "" })).toMatchObject({
+      readToken: undefined,
+      writeToken: undefined,
+    });
+    expect(loadConfig({ MCP_READ_TOKEN: "r", MCP_WRITE_TOKEN: "w" })).toMatchObject({ readToken: "r", writeToken: "w" });
     expect(() => loadConfig({ PORT: "abc" })).toThrow(/PORT must be/);
   });
 });

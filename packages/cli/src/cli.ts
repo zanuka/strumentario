@@ -217,7 +217,7 @@ async function serve(ctx: CliContext, settings: Settings): Promise<ExitCode> {
     const resolved = {
       host: config.host,
       port: config.port,
-      auth: config.authToken !== undefined,
+      auth: [config.authToken, config.readToken, config.writeToken].some((token) => token !== undefined),
       url: `http://${config.host}:${config.port}/mcp`,
     };
     ctx.stdout(settings.json ? `${JSON.stringify(resolved)}\n` : `Would listen on ${resolved.url} (auth: ${resolved.auth ? "bearer token" : "none"})\n`);
@@ -284,7 +284,7 @@ function connectionFailure(ctx: CliContext, settings: Settings, error: unknown):
   const unauthorized =
     code === 401 || code === 403 || /\b(401|403)\b|unauthori[sz]ed|forbidden/i.test(message);
   const hint = unauthorized
-    ? "The server requires a bearer token. Pass --token or set STRUMENTARIO_TOKEN to the server's MCP_AUTH_TOKEN."
+    ? "The server requires a bearer token. Pass --token or set STRUMENTARIO_TOKEN to the server's MCP_AUTH_TOKEN (or MCP_WRITE_TOKEN for writes, MCP_READ_TOKEN for read-only access)."
     : `Is the server running? Start it with \`strumentario serve\`, or point --url / STRUMENTARIO_URL at it.`;
   ctx.stderr(`Cannot reach ${settings.url}: ${message}\n${hint}\n`);
   return EXIT.connection;

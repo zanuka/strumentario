@@ -1,32 +1,30 @@
-import { timingSafeEqual } from "node:crypto";
 import {
   createServer,
   type IncomingMessage,
   type Server,
   type ServerResponse,
 } from "node:http";
+import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import { authEnabled, authInfoFor, resolveScope } from "./auth.js";
 import { createMcpServer, type McpServerOptions } from "./server.js";
 
 export const MCP_HTTP_PATH = "/mcp" as const;
 export const HEALTH_PATH = "/healthz" as const;
 
 export interface McpHttpOptions extends McpServerOptions {
-  /** Shared bearer secret for `/mcp`. Auth is off when unset or empty. */
+  /** Shared bearer secret for `/mcp` that acts as a write token (`MCP_AUTH_TOKEN`). */
   authToken?: string | undefined;
+  /** Bearer secret limited to read-only tools and resources (`MCP_READ_TOKEN`). */
+  readToken?: string | undefined;
+  /** Bearer secret that may call everything (`MCP_WRITE_TOKEN`). */
+  writeToken?: string | undefined;
 }
 
-function tokensMatch(expected: string, provided: string): boolean {
-  const a = Buffer.from(expected);
-  const b = Buffer.from(provided);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
-
-function isAuthorized(request: IncomingMessage, authToken: string): boolean {
-  const header = request.headers.authorization ?? "";
-  const match = /^Bearer\s+(.+)$/i.exec(header);
-  return match?.[1] !== undefined && tokensMatch(authToken, match[1].trim());
+function bearerOf(request: IncomingMessage): string | undefined {
+  const match = /^Bearer\s+(.+)$/i.exec(request.headers.authorization ?? "");
+  return match?.[1]?.trim();
 }
 
 function sendJsonRpcError(
@@ -68,7 +66,10 @@ export async function handleMcpHttpRequest(
     return;
   }
 
-  if (options.authToken && !isAuthorized(request, options.authToken)) {
+  const tokens = { read: options.readToken, write: [options.authToken, options.writeToken] };
+  const bearer = bearerOf(request);
+  const scope = bearer === undefined ? undefined : resolveScope(tokens, bearer);
+  if (authEnabled(tokens) && scope === undefined) {
     response.writeHead(401, {
       "content-type": "application/json",
       "www-authenticate": 'Bearer realm="strumentario"',
@@ -79,7 +80,7 @@ export async function handleMcpHttpRequest(
         error: {
           code: -32001,
           message:
-            "Unauthorized: send 'Authorization: Bearer <token>' matching the server's MCP_AUTH_TOKEN, or unset MCP_AUTH_TOKEN to disable auth.",
+            "Unauthorized: send 'Authorization: Bearer <token>' matching the server's MCP_READ_TOKEN, MCP_WRITE_TOKEN or MCP_AUTH_TOKEN, or unset them all to disable auth.",
         },
         id: null,
       }),
@@ -91,6 +92,11 @@ export async function handleMcpHttpRequest(
     response.writeHead(405, { allow: "POST" });
     response.end("Method not allowed");
     return;
+  }
+
+  // The transport hands this to tool handlers as `extra.authInfo`, where the scope is enforced.
+  if (scope !== undefined) {
+    (request as IncomingMessage & { auth?: AuthInfo }).auth = authInfoFor(scope);
   }
 
   const server = createMcpServer(options);

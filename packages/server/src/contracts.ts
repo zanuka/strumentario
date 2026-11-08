@@ -331,6 +331,10 @@ export function buildJournalDefinition(domain: DomainDefinition): JournalDefinit
     status: z.enum(JOURNAL_STATUSES),
     dryRun: z.boolean().describe("True when the call wrote nothing because it was a dry run."),
     agent: nullableString("Agent identity from the X-Strumentario-Agent header; null when the caller sent none."),
+    scope: z
+      .enum(["read", "write"])
+      .nullable()
+      .describe("Scope of the bearer token that made the call (always write for a mutate that ran); null when the transport has no auth (auth off, or stdio)."),
     idempotencyKey: nullableString("The idempotencyKey the caller passed, if any."),
     expectedRevision: nullableString(`The expectedRevision the caller passed, if any.`),
     revisionBefore: nullableString(
