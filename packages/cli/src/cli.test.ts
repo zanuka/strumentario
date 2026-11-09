@@ -13,7 +13,7 @@ interface Run {
   stderr: string;
 }
 
-async function cli(args: string[], env: NodeJS.ProcessEnv = {}, signal?: AbortSignal): Promise<Run> {
+async function cli(args: string[], env: NodeJS.ProcessEnv = {}, signal?: AbortSignal, stdin?: string): Promise<Run> {
   let stdout = "";
   let stderr = "";
   const code = await runCli(args, {
@@ -21,6 +21,7 @@ async function cli(args: string[], env: NodeJS.ProcessEnv = {}, signal?: AbortSi
     stdout: (text) => (stdout += text),
     stderr: (text) => (stderr += text),
     ...(signal ? { signal } : {}),
+    ...(stdin !== undefined ? { stdin: async () => stdin } : {}),
   });
   return { code, stdout, stderr };
 }
@@ -328,5 +329,115 @@ describe("exit codes", () => {
     const result = await cli(["--help"]);
     expect(result.code).toBe(EXIT.ok);
     expect(result.stdout).toMatch(/Exit codes/);
+  });
+});
+
+describe("batch", () => {
+  const lines = (...records: unknown[]) => records.map((r) => (typeof r === "string" ? r : JSON.stringify(r))).join("\n");
+  const page = (slug: string) => ({ title: slug, slug, body: "Body." });
+  const out = (run: Run) => run.stdout.trimEnd().split("\n").map((line) => JSON.parse(line) as Record<string, unknown>);
+
+  it("returns one record per line in input order and exits 1 on any failure", async () => {
+    const url = await start();
+    const input = lines(
+      { id: "a", tool: "validate", input: { instance: VALID_PAGE } },
+      "not json at all",
+      { id: "b", tool: "nope", input: {} },
+      { id: 7, tool: "validate", input: { instance: { title: "" } } },
+      { tool: "query" },
+      { id: "c", tool: "query", input: { slug: "missing-page" } },
+      "",
+      { id: "d", tool: "validate", input: "x" },
+    );
+    const run = await cli(["batch", "--url", url], {}, undefined, input);
+    expect(run.code).toBe(EXIT.tool);
+    const records = out(run);
+    expect(records.map((r) => r.id)).toEqual(["a", null, "b", 7, null, "c", "d"]);
+    expect(records.map((r) => r.ok)).toEqual([true, false, false, false, false, expect.any(Boolean), false]);
+    expect(records[0]).toEqual({ id: "a", ok: true, result: { valid: true, errors: [] } });
+    expect(records[1]).toMatchObject({ error: { code: "invalid_line" } });
+    expect(records[2]).toMatchObject({ error: { code: expect.stringMatching(/tool_error|rejected/) } });
+    expect(records[3]).toMatchObject({ error: { code: "tool_error" } });
+    expect(records[4]).toMatchObject({ error: { code: "invalid_line" } });
+    expect(records[6]).toMatchObject({ error: { code: "invalid_line" } });
+  });
+
+  it("exits 0 when every call succeeds, reading --input-file", async () => {
+    const url = await start();
+    const file = path.join(dataDir, "calls.jsonl");
+    await writeFile(file, lines({ id: 1, tool: "validate", input: { instance: VALID_PAGE } }, { id: 2, tool: "query" }));
+    const run = await cli(["batch", "--url", url, "--input-file", file]);
+    expect(run.code).toBe(EXIT.ok);
+    expect(out(run).map((r) => [r.id, r.ok])).toEqual([[1, true], [2, true]]);
+  });
+
+  it("runs 8 calls in parallel with --concurrency 8 and maps results back by id", async () => {
+    const url = await start();
+    const slugs = Array.from({ length: 8 }, (_, i) => `page-${i}`);
+    const input = lines(...slugs.map((slug) => ({ id: slug, tool: "mutate", input: { action: "create", slug, page: page(slug), dryRun: false } })));
+    const run = await cli(["batch", "--url", url, "--concurrency", "8"], {}, undefined, input);
+    expect(run.code).toBe(EXIT.ok);
+    const records = out(run);
+    expect(records.map((r) => r.id)).toEqual(slugs);
+    for (const record of records) {
+      expect(record).toMatchObject({ ok: true, result: { ok: true, dryRun: false } });
+      expect((record.result as { slug: string }).slug).toBe(record.id);
+    }
+    const query = await cli(["call", "query", "--json", "--url", url]);
+    expect((JSON.parse(query.stdout) as { pages: unknown[] }).pages).toHaveLength(8);
+  });
+
+  it("--dry-run never writes, even for dryRun: false, and scaffold stays in memory", async () => {
+    process.env.STRUMENTARIO_SCAFFOLD_ROOT = dataDir;
+    try {
+      const url = await start();
+      const input = lines(
+        { id: "m", tool: "mutate", input: { action: "create", slug: VALID_PAGE.slug, page: VALID_PAGE, dryRun: false } },
+        { id: "s", tool: "scaffold", input: { target: "client", write: true, outDir: "gen" } },
+        { id: "q", tool: "query" },
+      );
+      const run = await cli(["batch", "--dry-run", "--url", url], {}, undefined, input);
+      expect(run.code).toBe(EXIT.ok);
+      const records = out(run);
+      expect(records[0]).toMatchObject({ ok: true, result: { ok: true, dryRun: true } });
+      expect(records[1]).toMatchObject({ ok: true, result: { written: false } });
+      expect(records[2]).toMatchObject({ ok: true, result: { pages: [] } });
+      // Nothing but the journal (which records dry runs too) exists: no page file, no scaffold output.
+      expect((await readdir(dataDir)).filter((name) => name !== "journal.jsonl")).toEqual([]);
+      const journal = JSON.parse((await cli(["journal", "--json", "--url", url])).stdout) as { entries: { dryRun: boolean }[] };
+      expect(journal.entries.every((entry) => entry.dryRun)).toBe(true);
+    } finally {
+      delete process.env.STRUMENTARIO_SCAFFOLD_ROOT;
+    }
+  });
+
+  it("--stop-on-error skips the remaining calls but still reports every id", async () => {
+    const url = await start();
+    const input = lines(
+      { id: 1, tool: "validate", input: { instance: VALID_PAGE } },
+      { id: 2, tool: "validate", input: { instance: {} } },
+      { id: 3, tool: "validate", input: { instance: VALID_PAGE } },
+    );
+    const run = await cli(["batch", "--stop-on-error", "--url", url], {}, undefined, input);
+    expect(run.code).toBe(EXIT.tool);
+    const records = out(run);
+    expect(records.map((r) => r.ok)).toEqual([true, false, false]);
+    expect(records[2]).toMatchObject({ id: 3, error: { code: "skipped" } });
+  });
+
+  it("rejects a bad --concurrency or missing input as usage errors and a dead server as 3", async () => {
+    const url = await start();
+    expect((await cli(["batch", "--concurrency", "0", "--url", url], {}, undefined, "")).code).toBe(EXIT.usage);
+    expect((await cli(["batch", "--url", url])).code).toBe(EXIT.usage);
+    expect((await cli(["batch", "--url", url, "--input-file", path.join(dataDir, "nope")])).code).toBe(EXIT.usage);
+    const dead = await cli(["batch", "--url", `http://127.0.0.1:${await freePort()}/mcp`], {}, undefined, lines({ id: 1, tool: "query" }));
+    expect(dead.code).toBe(EXIT.connection);
+    expect(dead.stdout).toBe("");
+  });
+
+  it("an empty batch succeeds with no output", async () => {
+    const url = await start();
+    const run = await cli(["batch", "--url", url], {}, undefined, "\n\n");
+    expect(run).toMatchObject({ code: EXIT.ok, stdout: "" });
   });
 });
