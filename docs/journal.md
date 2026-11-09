@@ -11,7 +11,7 @@ The journal answers "who changed what, and when" for a Strumentario store. Every
 JSON Lines: one object per line, UTF-8, each line ending in `\n`. Lines are written with a single append, queued per file within a process and appended with `O_APPEND`, so concurrent writers, including separate stdio server processes on one data directory, do not interleave or truncate lines. Entry lines are well under 4 KB: `slug`, `agent` and `idempotencyKey` are truncated at 200 characters.
 
 ```json
-{"v":1,"ts":"2026-11-08T11:02:51.123Z","tool":"mutate","action":"update","slug":"getting-started","status":"applied","dryRun":false,"agent":"agent-a","idempotencyKey":"k-1","expectedRevision":"3f2a9c1d5e7b8a40","revisionBefore":"3f2a9c1d5e7b8a40","revisionAfter":"9b1e0c44d2a7f653","proposedRevision":null,"errorCode":null,"payload":{"bytes":212,"hash":"c04be9a1d77e3f08"}}
+{"v":1,"ts":"2026-11-08T11:02:51.123Z","tool":"mutate","action":"update","slug":"getting-started","status":"applied","dryRun":false,"agent":"agent-a","scope":"write","idempotencyKey":"k-1","expectedRevision":"3f2a9c1d5e7b8a40","revisionBefore":"3f2a9c1d5e7b8a40","revisionAfter":"9b1e0c44d2a7f653","proposedRevision":null,"errorCode":null,"payload":{"bytes":212,"hash":"c04be9a1d77e3f08"}}
 ```
 
 | Field | Type | Meaning |
@@ -24,6 +24,7 @@ JSON Lines: one object per line, UTF-8, each line ending in `\n`. Lines are writ
 | `status` | see below | The outcome. |
 | `dryRun` | boolean | True when nothing was written because the call was a dry run (the default). |
 | `agent` | string \| null | Value of the `X-Strumentario-Agent` header (`strumentario --agent <id>`); `null` when the caller sent none. |
+| `scope` | `"write"` \| null | Scope of the bearer token that made the call (`MCP_WRITE_TOKEN` or `MCP_AUTH_TOKEN`; see [token scopes](server-transport-and-soak.md#token-scopes)). Always `write` for a `mutate` that ran, since read tokens are refused before the tool runs. `null` when the transport has no auth: auth off, or stdio. Never the token itself. |
 | `idempotencyKey` | string \| null | The key the caller passed, if any. |
 | `expectedRevision` | string \| null | The `expectedRevision` the caller passed, if any. |
 | `revisionBefore` | string \| null | Revision of the page before the call. `null` when the page did not exist, and for a `replayed` entry (a replay does not read the store). |
@@ -83,4 +84,4 @@ The journal is written after the outcome is decided. If the append fails (disk f
 
 ## Scope
 
-Not in the journal: reads (`query`, `validate`), page content, request headers other than the agent identity, and any rotation or retention policy. A consumer that wants retention can copy and truncate on its own schedule; a truncation is detected by the past-the-end cursor error.
+Not in the journal: reads (`query`, `validate`), calls refused for lacking the write scope, page content, request headers other than the agent identity, and any rotation or retention policy. A consumer that wants retention can copy and truncate on its own schedule; a truncation is detected by the past-the-end cursor error.

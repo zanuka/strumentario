@@ -141,7 +141,8 @@ This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp
 
 - `PORT` — listen port, default `3001`.
 - `HOST` — bind address, default `127.0.0.1` (loopback only).
-- `MCP_AUTH_TOKEN` — optional shared secret; when set, `/mcp` requires `Authorization: Bearer <token>`.
+- `MCP_AUTH_TOKEN` — optional shared secret; when set, `/mcp` requires `Authorization: Bearer <token>`. It acts as a write token.
+- `MCP_READ_TOKEN` / `MCP_WRITE_TOKEN` — optional split: a read token may call `readOnlyHint: true` tools (`query`, `validate`) and read resources; a write token may call everything (`mutate`, `scaffold`). Not applied over stdio. See [token scopes](docs/server-transport-and-soak.md#token-scopes).
 - `MCP_TRANSPORT` — `http` (default) or `stdio`. Streamable HTTP stays the primary path; stdio is the same server and tools for hosts that spawn it as a child process, with no port. Equivalent to the `--stdio` flag.
 - `STRUMENTARIO_AGENT` — stdio only: the agent name recorded for calls (there are no headers over stdio).
 

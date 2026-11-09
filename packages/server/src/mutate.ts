@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import type { TokenScope } from "./auth.js";
 import { getToolDefinition } from "./contracts.js";
 import { journalEntryFor, type Journal } from "./journal.js";
 import { handbookPageSchema, SLUG_PATTERN } from "./schema.js";
@@ -24,6 +25,8 @@ export interface MutateOptions {
   journal?: Journal | undefined;
   /** Agent identity to attribute the call to in the journal. */
   agent?: string | undefined;
+  /** Scope of the caller's bearer token, recorded in the journal; undefined when the transport has no auth. */
+  scope?: TokenScope | undefined;
   /** Called when the journal cannot be written; the mutation outcome is still returned. Defaults to stderr. */
   onJournalError?: (error: unknown) => void;
 }
@@ -88,7 +91,7 @@ export async function mutatePage(
   const record = async (result: MutateResult): Promise<MutateResult> => {
     if (options.journal) {
       try {
-        await options.journal.append(journalEntryFor(input, result, options.agent));
+        await options.journal.append(journalEntryFor(input, result, options.agent, undefined, options.scope));
       } catch (error) {
         (options.onJournalError ?? defaultJournalError)(error);
       }

@@ -8,9 +8,26 @@
 | `HOST` | `127.0.0.1` | Bind address. Loopback by default; set `0.0.0.0` only behind a network boundary you control. |
 | `MCP_TRANSPORT` | `http` | `http` (Streamable HTTP, the primary path) or `stdio`. `serve --stdio` / `strumentario serve --stdio` is the same as `MCP_TRANSPORT=stdio`. Any other value is a configuration error. |
 | `STRUMENTARIO_AGENT` | unset | Agent name attributed to calls in stdio mode, where there are no request headers. Ignored over HTTP, which uses `X-Strumentario-Agent`. |
-| `MCP_AUTH_TOKEN` | unset | Optional shared secret. When set, `/mcp` requires `Authorization: Bearer <token>` and answers `401` otherwise. Unset means no auth. `/healthz` is never gated. This is a single shared secret, not multi-tenant auth. |
+| `MCP_AUTH_TOKEN` | unset | Optional shared secret. When set, `/mcp` requires `Authorization: Bearer <token>` and answers `401` otherwise. It acts as a write token (see [Token scopes](#token-scopes)), so a single configured token behaves as before. Unset (with the two below also unset) means no auth. `/healthz` is never gated. |
+| `MCP_READ_TOKEN` | unset | Optional bearer secret limited to the read scope. |
+| `MCP_WRITE_TOKEN` | unset | Optional bearer secret with the write scope. Equivalent to `MCP_AUTH_TOKEN`; set either or both. |
 
-`PORT`, `HOST` and `MCP_AUTH_TOKEN` apply to HTTP only; stdio opens no port and needs no token.
+`PORT`, `HOST` and the three tokens apply to HTTP only; stdio opens no port and needs no token.
+
+## Token scopes
+
+Auth is on as soon as any of the three tokens is set; a request whose bearer matches none of them gets `401`. A matching token grants one of two fixed scopes. This is deliberately not multi-tenant auth: there are no per-agent or per-task tokens.
+
+| Scope | Token | May |
+| --- | --- | --- |
+| `read` | `MCP_READ_TOKEN` | Call tools annotated `readOnlyHint: true` (`query`, `validate`); list and read resources (pages, the page schema, the change journal). |
+| `write` | `MCP_WRITE_TOKEN`, `MCP_AUTH_TOKEN` | Everything a read token can, plus every other tool (`mutate`, `scaffold`). |
+
+**Which tools are writes is decided by the tool's own annotations, not a hand-kept list.** A tool needs the read scope only if it declares `readOnlyHint: true`; anything else, including a tool with no hint, needs the write scope. The check wraps every tool registered on the server (`createMcpServer` in `packages/server/src/server.ts`), so a new tool with `readOnlyHint: false` is write-only automatically (`scopes.test.ts` registers one and proves it). Today that makes `mutate` and `scaffold` writes. `scaffold` is annotated `readOnlyHint: false` because it can write files, so a read token is refused on it entirely, including previews with `write: false`, not only `write: true`; this is the safe default and keeps the rule one annotation deep.
+
+A refused call returns a tool result with `isError: true` and a message such as `Forbidden: tool "mutate" needs the write scope, but this bearer token has the read scope only. Send the server's MCP_WRITE_TOKEN (or MCP_AUTH_TOKEN) as the bearer token ...`. Nothing is written and nothing is journaled for a refused call. Token values are never logged, echoed in errors, or stored; the scope is recorded in change journal entries as `scope` (see [journal.md](journal.md)). `scaffold` host-config output still refers to the token by environment variable name (`MCP_AUTH_TOKEN`), never by value; point that variable at the read or write token the agent should use.
+
+**stdio does not use token scopes.** The host spawns the process and owns its stdin, so there is no bearer token to check and every tool is available; tokens are ignored and journal entries from stdio record `scope: null`. To give an agent read-only access, use the HTTP transport with a read token.
 
 ## stdio transport
 

@@ -43,7 +43,11 @@ export async function runServer(options: RunServerOptions): Promise<number> {
     });
   }
 
-  const server: Server = createMcpHttpServer({ authToken: config.authToken });
+  const server: Server = createMcpHttpServer({
+    authToken: config.authToken,
+    readToken: config.readToken,
+    writeToken: config.writeToken,
+  });
 
   try {
     await new Promise<void>((resolve, reject) => {
@@ -58,7 +62,11 @@ export async function runServer(options: RunServerOptions): Promise<number> {
     return 1;
   }
 
-  const auth = config.authToken ? "bearer auth enabled" : "no auth";
+  const scopes = [
+    config.readToken ? "read" : undefined,
+    config.writeToken || config.authToken ? "write" : undefined,
+  ].filter((scope) => scope !== undefined);
+  const auth = scopes.length > 0 ? `bearer auth enabled: ${scopes.join(" and ")} scope` : "no auth";
   options.log(
     `Strumentario MCP server listening on http://${config.host}:${config.port}${MCP_HTTP_PATH} (${auth})`,
   );

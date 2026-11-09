@@ -1,7 +1,10 @@
 import type { IncomingHttpHeaders } from "node:http";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
+import type { ServerNotification, ServerRequest } from "@modelcontextprotocol/sdk/types.js";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import { getToolDefinition, journalDefinition, type ToolDefinition } from "./contracts.js";
+import { allows, callerScope, requiredScope, scopeDeniedMessage } from "./auth.js";
+import { getToolDefinition, journalDefinition, type ToolAnnotations, type ToolDefinition } from "./contracts.js";
 import { FileJournal, JournalError, type Journal } from "./journal.js";
 import {
   HANDBOOK_PAGE_SCHEMA_URI,
@@ -58,6 +61,26 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
     name: "strumentario",
     version: "0.0.1",
   });
+
+  // Scope enforcement lives here, on every tool registered on this server, and reads only the
+  // tool's own annotations: a tool without `readOnlyHint: true` needs the write scope.
+  type Handler = (...args: unknown[]) => unknown;
+  type ToolConfig = { annotations?: ToolAnnotations; inputSchema?: unknown };
+  const registerTool = server.registerTool.bind(server) as unknown as (name: string, config: ToolConfig, handler: Handler) => unknown;
+  (server as { registerTool: unknown }).registerTool = (name: string, config: ToolConfig, handler: Handler) =>
+    registerTool(name, config, (...args: unknown[]) => {
+      // The SDK calls a tool with no input schema as handler(extra) and any other as handler(input, extra).
+      const extra = (config.inputSchema === undefined ? args[0] : args[1]) as RequestHandlerExtra<ServerRequest, ServerNotification>;
+      const needed = requiredScope(config.annotations);
+      const held = callerScope(extra.authInfo);
+      if (!allows(held, needed)) {
+        return {
+          isError: true,
+          content: [{ type: "text", text: scopeDeniedMessage(name, needed, held) }],
+        };
+      }
+      return handler(...args);
+    });
 
   // Tool metadata and schemas come from the generated definitions (contracts.ts);
   // only the handlers live here.
@@ -116,6 +139,7 @@ export function createMcpServer(options: CreateMcpServerOptions = {}): McpServer
       const structuredContent = await mutatePage(store, input as unknown as MutateInput, {
         journal,
         agent: agentOf(extra.requestInfo?.headers),
+        scope: callerScope(extra.authInfo),
       });
 
       return {

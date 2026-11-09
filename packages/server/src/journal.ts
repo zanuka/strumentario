@@ -1,5 +1,6 @@
 import { appendFile, mkdir, open, stat } from "node:fs/promises";
 import path from "node:path";
+import type { TokenScope } from "./auth.js";
 import { JOURNAL_DEFAULT_LIMIT, JOURNAL_MAX_LIMIT, JOURNAL_VERSION, type JOURNAL_STATUSES } from "./contracts.js";
 import type { MutateInput, MutateResult } from "./mutate.js";
 import { revisionOf } from "./store.js";
@@ -22,6 +23,7 @@ export interface JournalEntry {
   status: JournalStatus;
   dryRun: boolean;
   agent: string | null;
+  scope: TokenScope | null;
   idempotencyKey: string | null;
   expectedRevision: string | null;
   revisionBefore: string | null;
@@ -83,6 +85,7 @@ export function journalEntryFor(
   result: MutateResult,
   agent: string | undefined,
   now: Date = new Date(),
+  scope?: TokenScope,
 ): JournalEntry {
   const replayed = result.ok && result.replayed === true;
   const status: JournalStatus = !result.ok
@@ -108,6 +111,7 @@ export function journalEntryFor(
     status,
     dryRun: result.dryRun,
     agent: clamp(agent),
+    scope: scope ?? null,
     idempotencyKey: clamp(input.idempotencyKey),
     expectedRevision: clamp(input.expectedRevision),
     revisionBefore,

@@ -11,8 +11,12 @@ export interface ServerConfig {
   agent: string | undefined;
   port: number;
   host: string;
-  /** Shared secret for `/mcp`; auth is off when undefined. */
+  /** `MCP_AUTH_TOKEN`: the single shared secret of earlier versions. It acts as a write token. Auth is off when no token is set. */
   authToken: string | undefined;
+  /** `MCP_READ_TOKEN`: may call read-only tools and read resources, nothing else. */
+  readToken: string | undefined;
+  /** `MCP_WRITE_TOKEN`: may call everything. */
+  writeToken: string | undefined;
 }
 
 function parsePort(value: string | undefined): number {
@@ -42,6 +46,8 @@ function parseTransport(value: string | undefined): Transport {
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   const host = env.HOST?.trim();
   const authToken = env.MCP_AUTH_TOKEN?.trim();
+  const readToken = env.MCP_READ_TOKEN?.trim();
+  const writeToken = env.MCP_WRITE_TOKEN?.trim();
 
   const agent = env.STRUMENTARIO_AGENT?.trim();
 
@@ -51,5 +57,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     port: parsePort(env.PORT),
     host: host ? host : DEFAULT_HOST,
     authToken: authToken ? authToken : undefined,
+    readToken: readToken ? readToken : undefined,
+    writeToken: writeToken ? writeToken : undefined,
   };
 }
