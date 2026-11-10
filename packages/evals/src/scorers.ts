@@ -39,6 +39,7 @@ export const SCORER_NAMES = [
   "output_schema_valid",
   "no_unexpected_side_effect",
   "concurrency_safety",
+  "repair_converged",
 ] as const;
 
 // --- tool_choice ---------------------------------------------------------------
@@ -175,6 +176,8 @@ function isReadOnly(call: CallRecord): boolean {
   if (call.tool === "query" || call.tool === "validate") return true;
   // scaffold returns files and only touches the filesystem when asked with write: true; it never touches the store.
   if (call.tool === "scaffold") return true;
+  // repair works on the files it is sent and never reads or writes the store or the filesystem.
+  if (call.tool === "repair") return true;
   // mutate defaults to a dry run; only an explicit dryRun:false is allowed to write.
   return call.tool === "mutate" && call.input.dryRun !== false;
 }
@@ -277,9 +280,76 @@ function isReplay(call: CallRecord): boolean {
   return (call.structured as { replayed?: unknown } | undefined)?.replayed === true;
 }
 
+// --- repair_converged ------------------------------------------------------------
+
+interface RepairOutcome {
+  ok?: boolean;
+  converged?: boolean;
+  stopReason?: string;
+  maxRounds?: number;
+  roundsUsed?: number;
+  errorCounts?: number[];
+  rounds?: Array<{ kept?: boolean; errorsBefore?: number; errorsAfter?: number }>;
+  remainingErrors?: unknown[];
+}
+
+/**
+ * For every `repair` call: the loop honoured its stop condition (never more rounds than maxRounds, a
+ * kept round always shrinks the errors, a non-converged result says why and returns the remaining
+ * errors), and, when the case sets `convergeWithin`, it converged within that many rounds.
+ */
+export const repairConverged: Scorer = ({ case: goldenCase, result }) => {
+  const name = "repair_converged";
+  if (goldenCase.kind !== "tool" || !result.trace) return skipped(name);
+
+  const calls = result.trace.steps.flatMap((step) => step.calls).filter((call) => call.tool === "repair" && call.structured !== undefined);
+  if (calls.length === 0) return skipped(name);
+
+  const problems: string[] = [];
+  let badCalls = 0;
+  for (const call of calls) {
+    const found = checkRepair(call, goldenCase.convergeWithin);
+    if (found.length > 0) badCalls += 1;
+    problems.push(...found);
+  }
+  return { name, score: ratio(calls.length - badCalls, calls.length), problems };
+};
+
+function checkRepair(call: CallRecord, convergeWithin: number | undefined): string[] {
+  const out = call.structured as RepairOutcome;
+  if (out.ok !== true) {
+    return convergeWithin === undefined ? [] : [`repair was rejected, so it cannot converge within ${convergeWithin} rounds`];
+  }
+  const problems: string[] = [];
+  const used = out.roundsUsed ?? 0;
+  const limit = out.maxRounds ?? 0;
+  if (used > limit) problems.push(`repair used ${used} rounds, more than its maxRounds of ${limit}`);
+  if (out.rounds?.length !== used) problems.push(`repair reported ${used} rounds used but ${out.rounds?.length ?? 0} round entries`);
+  for (const round of out.rounds ?? []) {
+    if (round.kept === true && (round.errorsAfter ?? 0) >= (round.errorsBefore ?? 0)) {
+      problems.push("repair kept a round that did not reduce the error count");
+    }
+  }
+  if (out.converged === true) {
+    if ((out.remainingErrors ?? []).length > 0) problems.push("repair reported converged but still returned remaining errors");
+  } else {
+    if (!out.stopReason || out.stopReason === "converged") problems.push("repair did not converge but gave no stop reason");
+    if ((out.remainingErrors ?? []).length === 0) problems.push("repair did not converge but returned no remaining errors");
+    if (out.stopReason === "max_rounds" && used !== limit) problems.push(`repair stopped at max_rounds after ${used} of ${limit} rounds`);
+  }
+  if (convergeWithin !== undefined) {
+    if (out.converged !== true) {
+      problems.push(`repair did not converge within ${convergeWithin} rounds (stopped: ${out.stopReason ?? "unknown"}, ${(out.remainingErrors ?? []).length} errors left)`);
+    } else if (used > convergeWithin) {
+      problems.push(`repair converged but needed ${used} rounds; the case allows ${convergeWithin}`);
+    }
+  }
+  return problems;
+}
+
 // --- shared -----------------------------------------------------------------------
 
-export const scorers: readonly Scorer[] = [toolChoice, outputSchemaValid, noUnexpectedSideEffect, concurrencySafety];
+export const scorers: readonly Scorer[] = [toolChoice, outputSchemaValid, noUnexpectedSideEffect, concurrencySafety, repairConverged];
 
 export interface ScoredCase {
   id: string;

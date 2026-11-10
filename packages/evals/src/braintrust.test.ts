@@ -38,7 +38,7 @@ describe("runBraintrustExperiment (SDK mocked, no network)", () => {
     expect(evaluator.data.map((row) => row.input.id)).toEqual(subset.map((candidate) => candidate.id));
     expect(evaluator.maxConcurrency).toBe(1);
     const names = evaluator.scores.map((score) => score({ input: subset[0] as GoldenCase, output: { id: "x", category: "validate", passed: true, failures: [], durationMs: 0 } }).name);
-    expect(names).toEqual(["expectations_met", "tool_choice", "output_schema_valid", "no_unexpected_side_effect", "concurrency_safety"]);
+    expect(names).toEqual(["expectations_met", "tool_choice", "output_schema_valid", "no_unexpected_side_effect", "concurrency_safety", "repair_converged"]);
   }, 30_000);
 
   it("reports not-ok with the failing case when a score is below 1", async () => {

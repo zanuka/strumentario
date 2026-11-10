@@ -34,6 +34,7 @@ A factory stage can rely on the following. It needs no UI, no session and no LLM
 | `validate` | Gate a draft before writing. Result `{valid, errors[]}`. | none |
 | `mutate` | `create` / `update` / `delete`. **Dry run by default**; send `"dryRun": false` to write. Send `expectedRevision` on update/delete and an `idempotencyKey` on every write so a retried stage cannot double-apply. | writes the store, appends the journal |
 | `scaffold` | Typed client or host config from the schema. Returns files in memory; writes only with `write: true` and `outDir`. | files under `STRUMENTARIO_SCAFFOLD_ROOT` when asked |
+| `repair` | Fix scaffold files that fail `tsc` or schema checks, within `maxRounds` (default 3) and stopping early when errors stop shrinking. Returns the corrected files and the rounds report. | none |
 
 **Resources**: `strumentario://journal` (append-only record of every `mutate`; `?since=<cursor>&limit=<n>`, tail by passing the last `cursor`), `strumentario://pages/{slug}`, `strumentario://schemas/handbook-page`. The journal format is the contract: [journal](../journal.md).
 

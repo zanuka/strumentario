@@ -42,7 +42,7 @@ export const handbookDomain = defineDomain({
       minLengthMessage: "must be a non-empty string",
     },
   ],
-  primitives: ["query", "mutate", "validate", "scaffold"],
+  primitives: ["query", "mutate", "validate", "scaffold", "repair"],
 });
 
 export const handbookPageSchema = z

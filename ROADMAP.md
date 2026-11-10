@@ -129,7 +129,7 @@ Prefer **both**. A and B are equal citizens over the same schema-generated tool 
 ## Phase 4 — Agentic scaffolding
 
 - [ ] Narrow scaffolder (schema → typed client / page / studio stub) exposed as MCP tools + skill/slash commands
-- [ ] One repair loop (compile or test feedback → patch) with a clear stop condition
+- [x] One repair loop (compile or test feedback → patch) with a clear stop condition: the `repair` tool, bounded rounds plus an early stop when errors stop shrinking, scored by `repair_converged`
 - [ ] Evals cover “output compiles / matches golden structure”
 - [ ] Scaffold remains a content-domain capability agents *do*, not only a one-shot CLI
 - [ ] Tag `v0.4.0` — “agents that build, not only query”

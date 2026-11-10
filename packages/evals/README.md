@@ -26,6 +26,7 @@ Code scorers in `src/scorers.ts` read the trace the harness records (every call 
 | `tool_choice` | the expected tool and arguments in the golden spec versus the calls actually sent; the tool must be a published contract. In the direct-invocation task this guards the tool/argument contract; whether a model picks the right tool is the agent path below |
 | `output_schema_valid` | every structured result validates against the tool's published `outputSchema` |
 | `no_unexpected_side_effect` | query, validate and dry-run mutate steps leave the store byte-identical and report `dryRun: true` |
+| `repair_converged` | every `repair` call honoured its stop condition (rounds within `maxRounds`, a kept round always shrank the errors, a non-converged result names why and returns the remaining errors) and, when a case sets `convergeWithin: N`, converged within N rounds |
 | `concurrency_safety` | parallel calls: no lost update (two writers never both win from one revision; the final revision was produced by an accepted call) and no double apply (one idempotency key applies once) |
 
 Braintrust also gets `expectations_met`, the harness verdict on the `expect`/`after` checks in each case. A regression is any case with `expectations_met` or an applicable scorer below 1. Scorers are unit tested with failing examples in `src/scorers.test.ts`. The first results are in [`docs/evals/`](../../docs/evals/2026-11-08-baseline.md).
@@ -40,7 +41,7 @@ pnpm eval:agent --summary docs/evals/<date>-agent-tool-selection.md   # also wri
 ```
 
 - Tool definitions come from a live MCP `tools/list` against `createMcpServer()` (`listPublishedTools` in `src/agent.ts`); nothing is copied by hand. A test proves the list request is made and handed to the model unchanged.
-- 17 prompts in `src/agent-cases.ts` with the expected tool and an argument *shape* (subset match: listed keys must match). Near misses: `query` vs `validate`, `mutate` dry run vs write, `mutate` vs `scaffold`.
+- 19 prompts in `src/agent-cases.ts` with the expected tool and an argument *shape* (subset match: listed keys must match). Near misses: `query` vs `validate`, `mutate` dry run vs write, `mutate` vs `scaffold`, and `repair` (fix a failing generated file) vs `scaffold` (generate one).
 - Scorers: `tool_selected` (right tool; accuracy per tool is computed from it), `tool_choice` and `output_schema_valid` (the scorers above, run on the call executed through the golden harness), `argument_shape` and `argument_schema_valid` (arguments validate against the published `inputSchema`).
 - No `ANTHROPIC_API_KEY`/`OPENAI_API_KEY`: prints how to set one and exits `0`; `pnpm test` covers the whole path with the model mocked. The Anthropic model defaults to `claude-sonnet-5-5` (`EVAL_ANTHROPIC_MODEL` overrides; `EVAL_OPENAI_MODEL` for OpenAI).
 - With `BRAINTRUST_API_KEY` set the same run is recorded as a Braintrust experiment, with the same project setting as `pnpm eval`.
@@ -56,7 +57,7 @@ pnpm eval:agent --summary docs/evals/<date>-agent-tool-selection.md   # also wri
   - **CLI cases** start the Streamable HTTP server on a free port and run the real `strumentario` CLI (`runCli`) against it, checking exit code, `--json` stdout and stderr.
 - Tool names are checked against the exported `toolContracts` from `@strumentario/server`; a misspelled tool fails the case.
 
-Categories: `query`, `validate`, `mutate`, `concurrency` (parallel calls, races, idempotent retries) `scaffold` (files returned in memory, nothing written without `write: true`, no effect on pages) and `cli`.
+Categories: `query`, `validate`, `mutate`, `concurrency` (parallel calls, races, idempotent retries) `scaffold` (files returned in memory, nothing written without `write: true`, no effect on pages), `repair` (a broken scaffold converges within the round limit; a file the template path cannot fix stops early with its errors; passing files use no rounds; unsafe paths are refused) and `cli`.
 
 ## Add a case
 
