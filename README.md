@@ -150,6 +150,59 @@ To use stdio, point the host at `node /abs/path/to/packages/server/dist/serve.js
 
 `GET /healthz` returns `200` for liveness checks. Send an optional `X-Strumentario-Agent` header to identify the calling agent. See [docs/server-transport-and-soak.md](docs/server-transport-and-soak.md) for the stateless-transport decision and soak results.
 
+### Tools, resources and prompts (v0.1.0)
+
+| Tool | Read-only | What it does |
+| --- | --- | --- |
+| `query` | yes | Get one handbook page by `slug`, or list pages (`text` filter, `limit`). Every page carries its `revision`. |
+| `validate` | yes | Check a page draft against the schema without storing it. |
+| `mutate` | no | Create, update or delete one page. Dry-run by default; `expectedRevision` guards updates and deletes, `idempotencyKey` makes retries safe. Every call is journaled. |
+| `scaffold` | no | Generate a typed client or host config from the schema. Returns files in memory; writes only with `write: true` and `outDir`. |
+
+| Resource | Contents |
+| --- | --- |
+| `strumentario://schemas/handbook-page` | JSON Schema of a page |
+| `strumentario://pages/{slug}` | A stored page with its revision |
+| `strumentario://journal` (`?since=<cursor>&limit=<n>`) | Append-only change journal, see [docs/journal.md](docs/journal.md) |
+
+Prompt: `review-draft` (validate before any mutate).
+
+### Connect an agent host
+
+Start the server first (`pnpm --filter @strumentario/server serve`, default `http://localhost:3001/mcp`). Each snippet below was run against that server; the `X-Strumentario-Agent` header is optional and shows up in the [change journal](docs/journal.md) so you can tell hosts apart.
+
+**Claude Code** (project-scoped, written to `.mcp.json`; use `--scope user` to make it global):
+
+```bash
+claude mcp add --transport http --scope project strumentario http://localhost:3001/mcp \
+  --header "X-Strumentario-Agent: claude-code"
+```
+
+Put the name and URL before `--header`: the flag takes several values and swallows a trailing name.
+
+**Cursor** (`.cursor/mcp.json` in the project, or `~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "strumentario": {
+      "url": "http://localhost:3001/mcp",
+      "headers": { "X-Strumentario-Agent": "cursor" }
+    }
+  }
+}
+```
+
+**Any other host** that speaks Streamable HTTP: point it at `http://localhost:3001/mcp`, transport `streamable-http`, and send `X-Strumentario-Agent: <your-agent-id>` if it supports custom headers. `strumentario call scaffold --json --input '{"target":"host-config"}'` prints all three files generated from the live tool list, so they cannot drift from the tool names.
+
+**Server with bearer tokens.** If you started the server with `MCP_READ_TOKEN` / `MCP_WRITE_TOKEN` / `MCP_AUTH_TOKEN`, add `--header "Authorization: Bearer $TOKEN"` (Claude Code) or `"Authorization": "Bearer <token>"` under `headers` (Cursor). Give an agent the read token to limit it to `query` and `validate`. Do not commit tokens; use your host's env-var interpolation where it has one.
+
+**Host that spawns the server (stdio).** No port, no token; see [server transport](docs/server-transport-and-soak.md#stdio-transport) for the entry.
+
+What the host sees: tools `query`, `validate`, `mutate`, `scaffold`; resources `strumentario://schemas/handbook-page`, `strumentario://pages/{slug}` and `strumentario://journal`; prompt `review-draft`.
+
+Terminal agents and several agents at once: see the [CLI guide](docs/cli-guide.md) and the [multi-agent guide](docs/multi-agent.md).
+
 ### CLI quick start
 
 The `strumentario` CLI is a thin MCP client: every command goes through the server's tools and resources, so there is no CLI-only API or write path.
@@ -182,11 +235,15 @@ Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/m
 
 ### MCP Inspector walkthrough
 
+![MCP Inspector connected to Strumentario: four tools listed, validate called, structured result shown](images/inspector-validate.png)
+
 1. Start the server with `pnpm --filter @strumentario/server serve`.
 2. In another terminal, run `npx @modelcontextprotocol/inspector` and open its local URL.
-3. Select **Streamable HTTP** as the transport.
-4. Enter `http://localhost:3001/mcp`, then connect and choose **List Tools** to see `validate`.
-5. Call `validate` with `{"instance":{"title":"Getting started","slug":"getting-started","body":"Draft content."}}` to confirm a valid draft.
+3. **Add Servers → Add manually**, set the transport to `streamable-http` and the URL to `http://localhost:3001/mcp` (older Inspector versions: pick **Streamable HTTP** and enter the URL), then connect.
+4. Open **Tools**: `query`, `mutate`, `validate` and `scaffold` are listed. Open **Resources** for the page schema, stored pages and the change journal, and **Prompts** for `review-draft`.
+5. Choose `validate`, enter `{"title":"Getting started","slug":"getting-started","body":"Draft content."}` as `instance` and run it: the result is `{"valid": true, "errors": []}`.
+
+Inspector 2.13 shows a "Schema portability" warning on `validate` and `mutate`: their `instance` / `page` input is declared as an unconstrained value. The calls work; see the [changelog](CHANGELOG.md#known-issues).
 
 ## Core Principles
 
@@ -200,7 +257,7 @@ Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/m
 
 ## Status
 
-Strumentario is in the earliest public stage. We are building in the open. The TypeScript monorepo foundation is in place (`packages/server`, `packages/cli`, `packages/evals`); Phase 1 is the Streamable HTTP MCP server.
+Strumentario is in the earliest public stage. We are building in the open. The TypeScript monorepo (`packages/server`, `packages/cli`, `packages/evals`) ships the Phase 1 MCP server (`query`, `mutate`, `validate`, `scaffold`, the change journal resource) and the Phase 2 local eval harness; `v0.1.0` is the first tagged release. See the [changelog](CHANGELOG.md).
 
 ```bash
 pnpm install
@@ -208,7 +265,7 @@ pnpm typecheck
 pnpm test
 ```
 
-See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/nocciolo-brain-details.md](./docs/nocciolo-brain-details.md) for the Nocciolo / Hindsight project memory bank (`.nocciolo/`, MCP recall).
+Guides: [CLI-first usage](docs/cli-guide.md), [several agents at once](docs/multi-agent.md), [how the stack fits together](docs/architecture/stack-seams.md). See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/nocciolo-brain-details.md](./docs/nocciolo-brain-details.md) for the Nocciolo / Hindsight project memory bank (`.nocciolo/`, MCP recall).
 
 ## Relationship to Nocciolo & Maglio
 
