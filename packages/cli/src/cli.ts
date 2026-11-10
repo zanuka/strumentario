@@ -5,6 +5,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { McpError } from "@modelcontextprotocol/sdk/types.js";
 import { AGENT_HEADER, DEFAULT_HOST, DEFAULT_PORT, JOURNAL_URI, loadConfig, runServer } from "@strumentario/server";
+import { forceDryRun, parseBatchInput, runBatch } from "./batch.js";
 
 /** Stable process exit codes; documented in the README. */
 export const EXIT = {
@@ -25,6 +26,8 @@ export interface CliContext {
   stderr: (text: string) => void;
   /** Aborting stops `serve`. Other commands ignore it. */
   signal?: AbortSignal;
+  /** Reads all of stdin; `batch` uses it when --input-file is absent. */
+  stdin?: () => Promise<string>;
 }
 
 const DEFAULT_URL = `http://${DEFAULT_HOST}:${DEFAULT_PORT}/mcp`;
@@ -36,6 +39,8 @@ Usage:
   strumentario tools                                List tools and input schemas (from the server)
   strumentario call <tool> [--input '<json>' | --input-file <path>]
                                                     Call a tool; --help after <tool> shows its schema
+  strumentario batch [--input-file <path>] [--stop-on-error] [--concurrency <n>]
+                                                    Run JSON-lines tool calls ({id,tool,input}) over one connection; one {id,ok,result|error} line each, in input order (docs/batch.md)
   strumentario resource <uri>                       Read a resource
   strumentario journal [--since <cursor>] [--limit <n>]
                                                     Read the change journal of mutate calls; pass the printed cursor as --since to continue
@@ -46,7 +51,9 @@ Options:
   --agent <id>      Agent identity, sent as the ${AGENT_HEADER} header (default: $STRUMENTARIO_AGENT)
   --json            Machine-readable output only on stdout; diagnostics go to stderr
   --stdio           serve: speak MCP over stdin/stdout instead of HTTP (diagnostics go to stderr)
-  --dry-run         serve: print the resolved config and exit. call: set dryRun: true when the tool accepts it, or write: false for scaffold
+  --dry-run         serve: print the resolved config and exit. call, batch: set dryRun: true when the tool accepts it, or write: false for scaffold
+  --stop-on-error   batch: stop starting calls after the first failure; the rest are reported as skipped
+  --concurrency <n> batch: calls in flight at once (default 1)
   -h, --help        Show this help
 
 Exit codes: 0 success, 1 tool or validation error, 2 usage error, 3 connection or auth error.
@@ -62,6 +69,8 @@ const OPTIONS = {
   limit: { type: "string" },
   input: { type: "string" },
   "input-file": { type: "string" },
+  "stop-on-error": { type: "boolean" },
+  concurrency: { type: "string" },
   json: { type: "boolean" },
   stdio: { type: "boolean" },
   "dry-run": { type: "boolean" },
@@ -129,6 +138,15 @@ export async function runCli(argv: string[], ctx: CliContext): Promise<ExitCode>
         const input = values.help ? {} : await readInput(values.input, values["input-file"]);
         return await withClient(ctx, settings, (client) =>
           values.help ? toolHelp(ctx, settings, client, tool) : call(ctx, settings, client, tool, input),
+        );
+      }
+      case "batch": {
+        expectArgs(command, rest, 0);
+        const concurrency = parseConcurrency(values.concurrency);
+        const text = await readBatchInput(ctx, values["input-file"]);
+        const entries = parseBatchInput(text);
+        return await withClient(ctx, settings, (client) =>
+          batch(ctx, settings, client, entries, concurrency, values["stop-on-error"] ?? false),
         );
       }
       case "resource": {
@@ -333,19 +351,8 @@ async function call(
   name: string,
   input: Record<string, unknown>,
 ): Promise<ExitCode> {
-  let args = input;
-  if (settings.dryRun) {
-    // Generic and schema-driven: a tool that declares dryRun gets it forced on; one that
-    // declares write (scaffold) gets it forced off. Either way nothing is written.
-    const { tools: list } = await client.listTools();
-    const tool = list.find((candidate) => candidate.name === name);
-    const properties = (tool?.inputSchema as { properties?: Record<string, unknown> } | undefined)?.properties;
-    if (properties && "dryRun" in properties) {
-      args = { ...input, dryRun: true };
-    } else if (properties && "write" in properties) {
-      args = { ...input, write: false };
-    }
-  }
+  // Schema-driven: dryRun forced on, or write forced off for scaffold, so nothing is written.
+  const args = settings.dryRun ? forceDryRun((await client.listTools()).tools, name, input) : input;
 
   const result = await client.callTool({ name, arguments: args });
   const structured = result.structuredContent;
@@ -360,6 +367,51 @@ async function call(
     return EXIT.tool;
   }
   return EXIT.ok;
+}
+
+function parseConcurrency(value: string | undefined): number {
+  if (value === undefined) {
+    return 1;
+  }
+  if (!/^\d+$/.test(value) || Number(value) < 1) {
+    throw new UsageError(`--concurrency "${value}" must be a positive integer.`);
+  }
+  return Number(value);
+}
+
+async function readBatchInput(ctx: CliContext, file: string | undefined): Promise<string> {
+  if (file !== undefined) {
+    try {
+      return await readFile(file, "utf8");
+    } catch (error) {
+      throw new UsageError(`Cannot read --input-file ${file}: ${errorMessage(error)}`);
+    }
+  }
+  if (!ctx.stdin) {
+    throw new UsageError("batch needs JSON lines on stdin or --input-file <path>.");
+  }
+  return ctx.stdin();
+}
+
+async function batch(
+  ctx: CliContext,
+  settings: Settings,
+  client: Client,
+  entries: ReturnType<typeof parseBatchInput>,
+  concurrency: number,
+  stopOnError: boolean,
+): Promise<ExitCode> {
+  const summary = await runBatch(client, entries, {
+    dryRun: settings.dryRun,
+    stopOnError,
+    concurrency,
+    onRecord: (record) => ctx.stdout(`${JSON.stringify(record)}\n`),
+  });
+  if (summary.failed === 0) {
+    return EXIT.ok;
+  }
+  ctx.stderr(`${summary.failed} of ${summary.total} calls failed; see the error records on stdout.\n`);
+  return summary.connectionLost ? EXIT.connection : EXIT.tool;
 }
 
 function journalUri(since: string | undefined, limit: string | undefined): string {

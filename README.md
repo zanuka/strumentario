@@ -166,16 +166,17 @@ strumentario call validate --json \
 strumentario call mutate --input-file page.json      # dry-run unless the input says "dryRun": false
 strumentario call mutate --help                      # description and schema come from the server
 strumentario call scaffold --input '{"target":"host-config"}'   # typed client or host config, generated from the schema; returns files, writes nothing
+strumentario batch --input-file calls.jsonl --concurrency 8    # many calls over one connection; {id,tool,input} lines in, {id,ok,result|error} lines out (see docs/batch.md)
 strumentario resource strumentario://schemas/handbook-page
 strumentario journal --limit 20                      # who changed what, from the change journal (see docs/journal.md)
 ```
 
-Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/mcp`), `--token` (default `$STRUMENTARIO_TOKEN` or `$MCP_AUTH_TOKEN`), `--agent <id>` (sent as `X-Strumentario-Agent`; default `$STRUMENTARIO_AGENT`), `--json` (only the result on stdout, diagnostics on stderr), `--dry-run` (`serve`: print the resolved config and exit; `call`: force `dryRun: true` for tools that accept it, or `write: false` for `scaffold`).
+Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/mcp`), `--token` (default `$STRUMENTARIO_TOKEN` or `$MCP_AUTH_TOKEN`), `--agent <id>` (sent as `X-Strumentario-Agent`; default `$STRUMENTARIO_AGENT`), `--json` (only the result on stdout, diagnostics on stderr), `--dry-run` (`serve`: print the resolved config and exit; `call` and `batch`: force `dryRun: true` for tools that accept it, or `write: false` for `scaffold`).
 
 | Exit code | Meaning |
 | --- | --- |
 | `0` | Success |
-| `1` | Tool or validation error (including `validate` returning `valid: false`, an unknown tool, or a missing resource) |
+| `1` | Tool or validation error (for `batch`, any failed call or invalid line; including `validate` returning `valid: false`, an unknown tool, or a missing resource) |
 | `2` | Usage error: unknown command or option, malformed `--input` |
 | `3` | Connection or auth error: server unreachable or token rejected |
 
