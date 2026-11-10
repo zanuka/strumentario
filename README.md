@@ -258,7 +258,7 @@ What the tools give you over raw file edits:
 - **Retries are safe.** An `idempotencyKey` replays the original result instead of applying the change twice.
 - **You can see who changed what.** Callers identify themselves (`X-Strumentario-Agent` or `--agent`) and every `mutate` outcome lands in the [change journal](docs/journal.md). The id is attribution, not authentication.
 - **Access has two levels.** `MCP_READ_TOKEN` may call `query` and `validate` only; `MCP_WRITE_TOKEN` may call everything.
-- **One contract everywhere.** Every host, the [CLI](docs/cli-guide.md) (including [`batch`](docs/batch.md)) and headless factories such as Maglio call the same four tools.
+- **One contract everywhere.** Every host, the [CLI](docs/cli-guide.md) (including [`batch`](docs/batch.md)) and headless factories such as Maglio call the same tools.
 
 Plain agent editing is enough for one person, one agent and occasional edits. Put Strumentario in front when several agents write to the same content, when runs are unattended, or when content has to stay valid and traceable. The [multi-agent guide](docs/multi-agent.md) walks through two agents racing on one page.
 
