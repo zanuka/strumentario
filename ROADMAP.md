@@ -81,14 +81,14 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 
 ## Phase 1 — MCP server (minimum ship)
 
-- [ ] Streamable HTTP MCP server with the **high-signal set**: query, mutate, validate, plus at least one scaffold-oriented tool; ≥1 resource + ≥1 prompt
-- [ ] Domain can start Sanity-like or a simple custom schema store — schema-driven handlers, not a grab-bag of unrelated demos
+- [x] Streamable HTTP MCP server with the **high-signal set**: query, mutate, validate, plus the `scaffold` tool; resources (page schema, pages, change journal) + prompt `review-draft`; stdio transport and read/write token scopes
+- [x] Domain can start Sanity-like or a simple custom schema store — schema-driven handlers, not a grab-bag of unrelated demos (handbook pages in a JSON file store, generated from one `DomainDefinition`)
 - [x] Document (even briefly) that the schema is intended to generate surfaces later; keep tool contracts stable for evals — see `docs/architecture/schema-generation.md`
-- [ ] Cursor / Claude Code / other host config snippets in README
-- [ ] MCP Inspector walkthrough (screenshot or short clip)
-- [ ] Tag `v0.1.0` — “agents can call my content instruments”
+- [x] Cursor / Claude Code / other host config snippets in README — verified verbatim against a local server; see also the [CLI guide](docs/cli-guide.md) and [multi-agent guide](docs/multi-agent.md)
+- [x] MCP Inspector walkthrough (screenshot in README, `images/inspector-validate.png`)
+- [ ] Tag `v0.1.0` — “agents can call my content instruments” (changelog written in [CHANGELOG.md](CHANGELOG.md); the maintainer tags after merge)
 
-**Exit criteria:** an external agent host can list tools, call at least one tool, and read one resource without forking the server process into the host. Tool surface reads as content primitives, not a miscellaneous catalog.
+**Exit criteria (met):** an external agent host can list tools, call at least one tool, and read one resource without forking the server process into the host. Verified with Claude Code over HTTP and stdio (listed tools, called `query`, read a resource); Cursor's CLI agent listed the four tools but its call/resource path could not be verified (not logged in). See [CHANGELOG.md](CHANGELOG.md). Tool surface reads as content primitives, not a miscellaneous catalog.
 
 **Protect:** do not expand into a large tool catalog to look “complete.” High-signal set > noisy surface.
 
@@ -139,7 +139,7 @@ Prefer **both**. A and B are equal citizens over the same schema-generated tool 
 
 ## Phase 5 — Polish for applications
 
-- [ ] Architecture doc: tools vs resources vs prompts; schema→surface generation; auth model; eval strategy; Nocciolo/Maglio seams
+- [ ] Architecture doc: tools vs resources vs prompts; schema→surface generation; auth model; eval strategy; Nocciolo/Maglio seams (seams note: [`docs/architecture/stack-seams.md`](docs/architecture/stack-seams.md))
 - [ ] 2–3 failure postmortems (`docs/postmortems/`) that show prompt/tool intuition — treat as product artifacts
 - [ ] Landscape note in `docs/landscape.md` (expand the README paragraph; keep opinions tied to this project’s experiments)
 - [ ] Contributor guide callouts: where PRs have the most leverage (evals, primitives, generation, postmortems)
