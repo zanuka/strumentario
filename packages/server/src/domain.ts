@@ -6,7 +6,7 @@ import { z } from "zod";
  * Add a field here and every generated surface follows (see contracts.ts).
  */
 
-export type ContentPrimitiveName = "query" | "mutate" | "validate" | "scaffold";
+export type ContentPrimitiveName = "query" | "mutate" | "validate" | "scaffold" | "repair";
 
 export interface StringFieldDefinition {
   name: string;

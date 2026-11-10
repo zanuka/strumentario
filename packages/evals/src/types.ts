@@ -16,7 +16,7 @@ import type { ContentPrimitiveName } from "@strumentario/server";
  * current stored revision of that page when the step runs.
  */
 
-export type GoldenCategory = "query" | "mutate" | "validate" | "scaffold" | "concurrency" | "cli";
+export type GoldenCategory = "query" | "mutate" | "validate" | "scaffold" | "repair" | "concurrency" | "cli";
 
 export interface GoldenPage {
   title: string;
@@ -75,6 +75,8 @@ interface GoldenCaseBase {
 export interface ToolGoldenCase extends GoldenCaseBase {
   kind: "tool";
   steps: GoldenStep[];
+  /** When set, every `repair` call in the case must converge within this many rounds (scorer `repair_converged`). */
+  convergeWithin?: number;
 }
 
 /** Runs the real `strumentario` CLI against a Streamable HTTP server on a temp store. */

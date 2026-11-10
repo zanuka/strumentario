@@ -53,6 +53,7 @@ golden dataset  →  task (invoke instruments)  →  scorers  →  experiment  �
 | Tool choice correct | Code | Expected tool name(s) / args vs golden |
 | Output schema valid | Code / autoevals JSON | Return shape matches declared contracts |
 | Scaffold structure / compile | Code | Files exist, structure matches, later `tsc` success |
+| Repair converged within N rounds | Code | `repair_converged`: the repair loop honoured its round limit and early stop, and converged within the case's budget |
 | Trajectory / step budget | Trace-level code | Unexpected tools, failures, runaway steps (repair loops) |
 | Final answer quality | LLM-as-judge | Intent fit using tool results (after the code baseline) |
 

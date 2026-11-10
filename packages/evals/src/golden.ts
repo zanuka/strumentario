@@ -399,6 +399,123 @@ export const goldenCases: readonly GoldenCase[] = [
     ],
   },
 
+  // --- repair ------------------------------------------------------------------
+  {
+    id: "repair-converges-broken-client",
+    kind: "tool",
+    category: "repair",
+    intent: "A scaffolded client with a tsc error is regenerated and converges in one round; the result reports the rounds used and the error count before and after.",
+    convergeWithin: 3,
+    steps: [
+      {
+        call: { tool: "repair", input: { files: [{ path: "strumentario-client.ts", content: "export interface PageDraft {\n  slug: Missing;\n}\n" }] } },
+        expect: {
+          isError: false,
+          match: {
+            ok: true,
+            converged: true,
+            stopReason: "converged",
+            maxRounds: 3,
+            roundsUsed: 1,
+            errorCounts: [1, 0],
+            rounds: [{ round: 1, errorsBefore: 1, errorsAfter: 0, changedFiles: ["strumentario-client.ts"], kept: true, usedModel: false }],
+            remainingErrors: [],
+            files: [{ path: "strumentario-client.ts", content: { $contains: "export function createStrumentarioClient" } }],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: "repair-converges-broken-host-config",
+    kind: "tool",
+    category: "repair",
+    intent: "A host config that fails schema validation is regenerated, keeping its URL, so a broken config file is not a dead end for an agent.",
+    convergeWithin: 3,
+    steps: [
+      {
+        call: {
+          tool: "repair",
+          input: { files: [{ path: ".mcp.json", content: '{"mcpServers":{"strumentario":{"type":"http","url":"https://strumentario.example/mcp","headers":[]}}}' }], maxRounds: 2 },
+        },
+        expect: {
+          isError: false,
+          match: {
+            ok: true,
+            converged: true,
+            maxRounds: 2,
+            roundsUsed: 1,
+            errorCounts: [1, 0],
+            files: [{ path: ".mcp.json", content: { $contains: "https://strumentario.example/mcp" } }],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: "repair-stops-when-errors-do-not-shrink",
+    kind: "tool",
+    category: "repair",
+    intent: "A failing file the generator did not produce cannot be fixed by the template path: the loop stops after one round instead of spinning, keeps the input and returns the remaining errors.",
+    steps: [
+      {
+        call: { tool: "repair", input: { files: [{ path: "mine.ts", content: "export const x: Missing = 1;\n" }] } },
+        expect: {
+          isError: false,
+          match: {
+            ok: true,
+            converged: false,
+            stopReason: "no_progress",
+            roundsUsed: 1,
+            errorCounts: [1],
+            rounds: [{ round: 1, errorsBefore: 1, errorsAfter: 1, changedFiles: [], kept: false }],
+            remainingErrors: [{ path: "mine.ts", source: "tsc", code: "TS2304" }],
+            files: [{ path: "mine.ts", content: "export const x: Missing = 1;\n" }],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: "repair-passing-files-use-no-rounds",
+    kind: "tool",
+    category: "repair",
+    intent: "Files that already pass come back unchanged with zero rounds, so calling repair on good output is safe.",
+    convergeWithin: 0,
+    steps: [
+      {
+        call: { tool: "repair", input: { files: [{ path: "notes.json", content: "{}" }] } },
+        expect: { isError: false, match: { ok: true, converged: true, roundsUsed: 0, errorCounts: [0], rounds: [], files: [{ path: "notes.json", content: "{}" }] } },
+      },
+    ],
+  },
+  {
+    id: "repair-leaves-pages-alone",
+    kind: "tool",
+    category: "repair",
+    intent: "repair is not mutate: it never reads or changes pages, so the store is exactly as it was after a repair.",
+    seed: [intro],
+    steps: [
+      {
+        call: { tool: "repair", input: { files: [{ path: "mine.ts", content: "export const x = 1;\n" }] } },
+        expect: { isError: false, match: { ok: true, converged: true } },
+      },
+    ],
+    after: [{ slug: "intro", exists: true, page: intro }],
+  },
+  {
+    id: "repair-rejects-an-unsafe-path",
+    kind: "tool",
+    category: "repair",
+    intent: "A path that escapes the output directory is refused with an actionable error instead of being checked.",
+    steps: [
+      {
+        call: { tool: "repair", input: { files: [{ path: "../escape.ts", content: "export {};\n" }] } },
+        expect: { isError: true, match: { ok: false, converged: false, error: { code: "invalid", message: { $contains: "inside the output directory" } } } },
+      },
+    ],
+  },
+
   // --- cli ---------------------------------------------------------------------
   {
     id: "cli-call-validate-json",

@@ -27,6 +27,13 @@ export const SCAFFOLD_TARGETS = ["client", "host-config"] as const;
 
 export const SCAFFOLD_ERROR_CODES = ["invalid", "exists", "write_error"] as const;
 
+export const REPAIR_DEFAULT_ROUNDS = 3;
+export const REPAIR_MAX_ROUNDS = 10;
+export const REPAIR_MAX_FILES = 20;
+export const REPAIR_MAX_FILE_BYTES = 200_000;
+export const REPAIR_STOP_REASONS = ["converged", "max_rounds", "no_progress"] as const;
+export const REPAIR_ERROR_SOURCES = ["tsc", "schema"] as const;
+
 /** Default MCP endpoint written into generated host config; matches `strumentario serve`. */
 export const SCAFFOLD_DEFAULT_URL = "http://127.0.0.1:3001/mcp";
 
@@ -302,6 +309,74 @@ export function buildScaffoldDefinition(domain: DomainDefinition): ToolDefinitio
   };
 }
 
+export function buildRepairDefinition(domain: DomainDefinition): ToolDefinition {
+  const { many } = domain.slots;
+  const file = z.object({
+    path: z.string().describe("Path relative to the output directory, with forward slashes."),
+    content: z.string().max(REPAIR_MAX_FILE_BYTES),
+  });
+  return {
+    name: "repair",
+    title: "Repair scaffold output",
+    description: `Fix generated scaffold files that fail their checks. Pass the files a scaffold call returned (send them back after editing or after a failed check): .ts files are type-checked with tsc and .json host-config files are schema-validated, and the failing generated files are corrected and re-checked until they pass, ${REPAIR_DEFAULT_ROUNDS} rounds by default (maxRounds, up to ${REPAIR_MAX_ROUNDS}) or sooner when a round does not reduce the errors. Returns the corrected files, rounds used, error counts per round, the stop reason, and any remaining errors. Deterministic: it regenerates a failing file from the schema and never touches the filesystem, so use scaffold with write: true to save the result. It never reads or changes ${many} in the store: use mutate for that and query to read them.`,
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    inputShape: {
+      files: z
+        .array(file)
+        .min(1)
+        .max(REPAIR_MAX_FILES)
+        .describe("The files to check and repair, as returned by scaffold: { path, content }. Paths must be relative."),
+      maxRounds: z
+        .number()
+        .int()
+        .min(1)
+        .max(REPAIR_MAX_ROUNDS)
+        .optional()
+        .describe(`Most repair rounds to spend (default ${REPAIR_DEFAULT_ROUNDS}). The loop also stops early when a round does not reduce the error count.`),
+    },
+    outputShape: {
+      ok: z.boolean().describe("False only when the input was rejected; a repair that did not converge is still ok: true."),
+      converged: z.boolean().describe("True when every check passes on the returned files."),
+      stopReason: z
+        .enum(REPAIR_STOP_REASONS)
+        .optional()
+        .describe("converged, max_rounds (the round limit was reached) or no_progress (a round did not reduce the errors, so its change was discarded)."),
+      maxRounds: z.number().int(),
+      roundsUsed: z.number().int(),
+      errorCounts: z.array(z.number().int()).describe("Error count before round 1, then after each kept round."),
+      rounds: z.array(
+        z.object({
+          round: z.number().int(),
+          errorsBefore: z.number().int(),
+          errorsAfter: z.number().int(),
+          changedFiles: z.array(z.string()),
+          kept: z.boolean().describe("False when the round did not reduce the errors; its change is discarded."),
+          usedModel: z.boolean().describe("True when the optional model-backed fixer made the change."),
+          note: z.string().optional().describe("Why a fixer produced nothing, when it failed."),
+        }),
+      ),
+      remainingErrors: z
+        .array(
+          z.object({
+            path: z.string(),
+            source: z.enum(REPAIR_ERROR_SOURCES),
+            message: z.string(),
+            line: z.number().int().optional(),
+            code: z.string().optional(),
+          }),
+        )
+        .describe("Errors still present in files; empty exactly when converged."),
+      files: z.array(file).describe("The best files reached: never worse than the input."),
+      error: z.object({ code: z.literal("invalid"), message: z.string() }).optional(),
+    },
+  };
+}
+
 export interface JournalDefinition {
   /** Resource URI without query parameters. */
   uri: string;
@@ -370,6 +445,7 @@ const BUILDERS: Record<ContentPrimitiveName, (domain: DomainDefinition) => ToolD
   mutate: buildMutateDefinition,
   validate: buildValidateDefinition,
   scaffold: buildScaffoldDefinition,
+  repair: buildRepairDefinition,
 };
 
 /** Tool definitions (contract + zod shapes) for every primitive the domain declares. */
