@@ -41,7 +41,7 @@ golden dataset  →  task (invoke instruments)  →  scorers  →  experiment  �
 ```
 
 1. **Golden dataset** — Small, high-signal cases checked into the repo (or with a documented export path). Start focused (roughly a dozen cases covering the four primitives), including edge cases: missing args, invalid payloads, refuse / do-nothing paths.
-2. **Task** — First slice: **direct tool invocation** against the same handlers the MCP server exposes (deterministic, cheap, attributable). Later: an **agent tool-selection** path that gives a model the published tool definitions and scores whether the high-signal set is discoverable and correctly chosen.
+2. **Task** — First slice: **direct tool invocation** against the same handlers the MCP server exposes (deterministic, cheap, attributable). The **agent tool-selection** path (`pnpm eval:agent`, issue #16) gives a model the published tool definitions and scores whether the high-signal set is discoverable and correctly chosen.
 3. **Scorers** — Prefer **code scorers** for schema validity and tool-choice correctness; reserve LLM-as-judge for intent fit and final-answer quality once the baseline is stable.
 4. **Experiment** — Each run is a comparable Braintrust experiment (e.g. content-primitives baselines) so prompt/tool/schema changes are measurable over time.
 5. **Public summary** — A checked-in write-up under `docs/evals/` is part of the product narrative: what was scored, what passed/failed, and what a regression looks like.
@@ -72,7 +72,7 @@ Code scorers stay first-class: faster, cheaper, and stable across model changes.
 Suggested progressive depth:
 
 1. Direct-tool path + code scorers on query / mutate / validate / simple scaffold
-2. Agent tool-selection path + richer metadata / spans for tool calls
+2. Agent tool-selection path (`pnpm eval:agent`; re-run it whenever a tool description or schema changes) + richer metadata / spans for tool calls
 3. Scaffold compile checks and repair-loop trajectory scorers (Phase 4)
 4. Optional online scoring of production traces that call Strumentario instruments
 

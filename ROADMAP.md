@@ -103,6 +103,7 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 - [x] Code scorers: tool choice, output-schema validity, no unexpected side effect (dry runs), concurrency safety (`packages/evals/src/scorers.ts`)
 - [x] CI job documented and failing on regressions (`.github/workflows/evals.yml`); first checked-in experiment summary in [`docs/evals/`](docs/evals/2026-11-08-baseline.md) (local scorer run with a deliberate regression shown red then green)
 - [x] Golden cases cover the content primitives (query / mutate / validate / scaffold, incl. concurrency and CLI)
+- [x] Agent tool-selection eval (`pnpm eval:agent`): 17 prompts, tool definitions from a live `tools/list`, tool-choice accuracy per tool; skips without a model key. Implemented and tested with the model mocked; **a live model run is still pending** — see [`docs/evals/`](docs/evals/2026-11-10-agent-tool-selection.md)
 - [ ] Tag `v0.2.0` — “prompt/tool changes are measurable”
 
 **Exit criteria:** a reviewer can run the eval suite from docs and see a pass/fail that would catch a real regression in tool selection or output shape. Public experiment summary exists before (or with) the first polished widget demo.

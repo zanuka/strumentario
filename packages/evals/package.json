@@ -20,6 +20,7 @@
     "typecheck": "tsc -b --pretty false",
     "eval": "node --import tsx/esm src/run.ts",
     "eval:local": "node --import tsx/esm src/local.ts",
+    "eval:agent": "node --import tsx/esm src/agent-main.ts",
     "eval:regression": "node --import tsx/esm src/regression.ts"
   },
   "engines": {
