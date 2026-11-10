@@ -245,6 +245,25 @@ Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/m
 
 Inspector 2.13 shows a "Schema portability" warning on `validate` and `mutate`: their `instance` / `page` input is declared as an unconstrained value. The calls work; see the [changelog](CHANGELOG.md#known-issues).
 
+## Why route agents through Strumentario
+
+Strumentario is not an alternative to Claude Code, Cursor or Codex. It is the MCP server those hosts call, and the agent still does the reasoning: it decides what to write, Strumentario decides whether the write is allowed and records it. The alternative to calling the tools is the agent editing content files directly.
+
+What the tools give you over raw file edits:
+
+- **Stale writes are refused.** `mutate` update and delete take `expectedRevision` from `query`; if another agent changed the page first, the call returns a `conflict` with the current page instead of overwriting it.
+- **Check before you write.** `validate` checks a draft without storing it, and `mutate` is a dry run by default (`dryRun: false` to write).
+- **Retries are safe.** An `idempotencyKey` replays the original result instead of applying the change twice.
+- **You can see who changed what.** Callers identify themselves (`X-Strumentario-Agent` or `--agent`) and every `mutate` outcome lands in the [change journal](docs/journal.md). The id is attribution, not authentication.
+- **Access has two levels.** `MCP_READ_TOKEN` may call `query` and `validate` only; `MCP_WRITE_TOKEN` may call everything.
+- **One contract everywhere.** Every host, the [CLI](docs/cli-guide.md) (including [`batch`](docs/batch.md)) and headless factories such as Maglio call the same four tools.
+
+Plain agent editing is enough for one person, one agent and occasional edits. Put Strumentario in front when several agents write to the same content, when runs are unattended, or when content has to stay valid and traceable. The [multi-agent guide](docs/multi-agent.md) walks through two agents racing on one page.
+
+### Why there is a tool-selection eval
+
+None of this helps if an agent picks the wrong tool, for example a write when it meant a dry run, or `validate` when it meant `query`. Agents choose from the published names, descriptions and input schemas, so those are part of the contract. `pnpm eval:agent` gives a model the tool list from a live `tools/list` and scores which tool and arguments it picks. Run it when a tool, description or schema changes; it is a change-time check, not a daily one, and `pnpm eval:local` cannot see a description regression. It needs a model key and skips without one. **No live run has been recorded yet**; see the [evals doc](docs/evals/2026-11-10-agent-tool-selection.md).
+
 ## Core Principles
 
 - **Protocol first, product second** — the MCP tools, resources, and prompts are the source of truth; UIs and scaffolds are views over them
