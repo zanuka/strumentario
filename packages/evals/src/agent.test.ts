@@ -1,3 +1,5 @@
+import { access, rm } from "node:fs/promises";
+import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { toolContracts } from "@strumentario/server";
 import { describe, expect, it, vi } from "vitest";
@@ -133,6 +135,19 @@ describe("scoring a model choice", () => {
     expect(scored.scores.argument_shape).toBe(0);
     expect(scored.scores.tool_choice).toBeLessThan(1);
     expect(scored.passed).toBe(false);
+  });
+
+  it("never writes scaffold output into the working directory", async () => {
+    const tools = await listPublishedTools();
+    const agentCase = agentCases.find((c) => c.id === "scaffold-write-files");
+    if (!agentCase) throw new Error("case missing");
+    const target = path.join(process.cwd(), "agent-eval-leak-check");
+    try {
+      await scoreAgentCase(agentCase, { tool: "scaffold", input: { target: "host-config", write: true, outDir: "agent-eval-leak-check" } }, tools);
+      await expect(access(target)).rejects.toThrow();
+    } finally {
+      await rm(target, { recursive: true, force: true });
+    }
   });
 
   it("flags arguments that violate the published input schema", async () => {

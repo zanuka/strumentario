@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { createMcpServer, FileSystemPageStore } from "@strumentario/server";
+import { createMcpServer, FileSystemPageStore, SCAFFOLD_ROOT_ENV } from "@strumentario/server";
 import { Ajv } from "ajv";
 import type { AgentCase, AgentCategory } from "./agent-cases.js";
 import { runCase } from "./harness.js";
@@ -258,7 +258,7 @@ export async function scoreAgentCase(
     steps: [{ call: spec, expect: { isError: false } }],
   };
   const executed: ToolGoldenCase = { ...specCase, steps: [{ call: sent, expect: { isError: false } }] };
-  const result: CaseResult = await runCase(executed);
+  const result = await runIsolated(executed);
   const chosen = toolChoice({ case: specCase, result });
   scores.tool_choice = chosen.score;
   problems.push(...dedupe(chosen.problems, problems));
@@ -268,6 +268,23 @@ export async function scoreAgentCase(
 
   const passed = Object.values(scores).every((score) => score === null || score >= 1);
   return { id: agentCase.id, category: agentCase.category, prompt: agentCase.prompt, chosen: choice, scores, problems, passed };
+}
+
+/**
+ * Executes the model's call through the golden harness with scaffold writes confined to a temp
+ * directory, so a model that picks `scaffold` with `write: true` cannot leave files in the repo.
+ */
+async function runIsolated(goldenCase: ToolGoldenCase): Promise<CaseResult> {
+  const root = await mkdtemp(path.join(tmpdir(), "strumentario-agent-scaffold-"));
+  const previous = process.env[SCAFFOLD_ROOT_ENV];
+  process.env[SCAFFOLD_ROOT_ENV] = root;
+  try {
+    return await runCase(goldenCase);
+  } finally {
+    if (previous === undefined) delete process.env[SCAFFOLD_ROOT_ENV];
+    else process.env[SCAFFOLD_ROOT_ENV] = previous;
+    await rm(root, { recursive: true, force: true });
+  }
 }
 
 export async function runAgentSuite(
