@@ -1,0 +1,48 @@
+{
+  "name": "strumentario",
+  "transport": "streamable-http",
+  "url": "http://127.0.0.1:3001/mcp",
+  "headers": {
+    "X-Strumentario-Agent": "<your-agent-id>"
+  },
+  "tools": [
+    {
+      "name": "query",
+      "title": "Query handbook pages",
+      "annotations": {
+        "destructiveHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "mutate",
+      "title": "Create, update or delete handbook page",
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "validate",
+      "title": "Validate handbook page",
+      "annotations": {
+        "destructiveHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "scaffold",
+      "title": "Scaffold client or host config",
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    }
+  ]
+}

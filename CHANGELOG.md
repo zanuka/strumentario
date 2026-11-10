@@ -19,6 +19,7 @@
 ### Evals
 
 - Golden dataset, code scorers and an offline harness (`pnpm eval:local`); Braintrust experiment path behind `BRAINTRUST_API_KEY`; CI workflow. See [docs/evals](docs/evals/2026-11-08-baseline.md).
+- Agent tool-selection eval (`pnpm eval:agent`): 17 prompts, tool definitions read from a live `tools/list`, scored per tool; skips without a model key. See [docs/evals](docs/evals/2026-11-10-agent-tool-selection.md).
 
 ### Docs
 

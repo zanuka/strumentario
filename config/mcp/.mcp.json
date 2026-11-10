@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "strumentario": {
+      "type": "http",
+      "url": "http://127.0.0.1:3001/mcp",
+      "headers": {
+        "X-Strumentario-Agent": "claude-code"
+      }
+    }
+  }
+}

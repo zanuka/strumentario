@@ -94,7 +94,7 @@ export async function runBraintrustExperiment(options: ExperimentOptions): Promi
   };
 }
 
-async function loadBraintrustEval(): Promise<EvalFunction> {
+export async function loadBraintrustEval(): Promise<EvalFunction> {
   const { Eval } = await import("braintrust");
   return Eval as unknown as EvalFunction;
 }

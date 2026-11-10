@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "eval": "pnpm --filter @strumentario/server run build && pnpm --filter @strumentario/evals run eval",
     "eval:local": "pnpm build && pnpm --filter @strumentario/evals run eval:local",
+    "eval:agent": "pnpm build && pnpm --filter @strumentario/evals run eval:agent",
     "clean": "rm -rf packages/*/dist *.tsbuildinfo packages/*/*.tsbuildinfo"
   },
   "engines": {

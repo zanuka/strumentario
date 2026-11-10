@@ -23,12 +23,30 @@ Code scorers in `src/scorers.ts` read the trace the harness records (every call 
 
 | Scorer | Checks |
 |--------|--------|
-| `tool_choice` | the expected tool and arguments in the golden spec versus the calls actually sent; the tool must be a published contract. In the direct-invocation task this guards the tool/argument contract; whether a model picks the right tool is the agent path (issue #16) |
+| `tool_choice` | the expected tool and arguments in the golden spec versus the calls actually sent; the tool must be a published contract. In the direct-invocation task this guards the tool/argument contract; whether a model picks the right tool is the agent path below |
 | `output_schema_valid` | every structured result validates against the tool's published `outputSchema` |
 | `no_unexpected_side_effect` | query, validate and dry-run mutate steps leave the store byte-identical and report `dryRun: true` |
 | `concurrency_safety` | parallel calls: no lost update (two writers never both win from one revision; the final revision was produced by an accepted call) and no double apply (one idempotency key applies once) |
 
 Braintrust also gets `expectations_met`, the harness verdict on the `expect`/`after` checks in each case. A regression is any case with `expectations_met` or an applicable scorer below 1. Scorers are unit tested with failing examples in `src/scorers.test.ts`. The first results are in [`docs/evals/`](../../docs/evals/2026-11-08-baseline.md).
+
+## Agent tool-selection eval
+
+`pnpm eval:agent` gives a model the **published tool definitions** and one prompt at a time, then scores the call it makes. It is the evidence that tool descriptions work for agents (issue #16).
+
+```bash
+ANTHROPIC_API_KEY=... pnpm eval:agent                      # or OPENAI_API_KEY; prints per-tool accuracy
+pnpm eval:agent --summary docs/evals/<date>-agent-tool-selection.md   # also writes the checked-in summary from this run
+```
+
+- Tool definitions come from a live MCP `tools/list` against `createMcpServer()` (`listPublishedTools` in `src/agent.ts`); nothing is copied by hand. A test proves the list request is made and handed to the model unchanged.
+- 17 prompts in `src/agent-cases.ts` with the expected tool and an argument *shape* (subset match: listed keys must match). Near misses: `query` vs `validate`, `mutate` dry run vs write, `mutate` vs `scaffold`.
+- Scorers: `tool_selected` (right tool; accuracy per tool is computed from it), `tool_choice` and `output_schema_valid` (the scorers above, run on the call executed through the golden harness), `argument_shape` and `argument_schema_valid` (arguments validate against the published `inputSchema`).
+- No `ANTHROPIC_API_KEY`/`OPENAI_API_KEY`: prints how to set one and exits `0`; `pnpm test` covers the whole path with the model mocked. The Anthropic model defaults to `claude-sonnet-5-5` (`EVAL_ANTHROPIC_MODEL` overrides; `EVAL_OPENAI_MODEL` for OpenAI).
+- With `BRAINTRUST_API_KEY` set the same run is recorded as a Braintrust experiment, with the same project setting as `pnpm eval`.
+- A model miss is a reported weak spot, not a failed build: the run exits `0`. Read the misses; do not change tool descriptions only to raise a score without reviewing why.
+
+**Changing a tool description, an input schema or a tool name requires re-running this suite** (and updating `docs/evals/` if the numbers move). Descriptions are the only thing an agent has to choose with; `pnpm eval:local` cannot see a description regression.
 
 ## How it works
 
