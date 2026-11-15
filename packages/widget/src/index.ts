@@ -1,0 +1,32 @@
+export {
+  createWidgetController,
+  emptyDraft,
+  mcpToolCaller,
+  type McpClientLike,
+  type PreviewState,
+  type RequestState,
+  type SaveState,
+  type ToolCaller,
+  type ValidationState,
+  type WidgetController,
+  type WidgetControllerOptions,
+  type WidgetState,
+} from "./controller.js";
+export {
+  KEY_FIELD,
+  PAGE_FIELDS,
+  TOOL_META,
+  WIDGET_TOOLS,
+  type MutateInput,
+  type MutateOutput,
+  type PageDraft,
+  type QueryInput,
+  type QueryOutput,
+  type StoredPage,
+  type ToolInputs,
+  type ToolOutputs,
+  type ValidateInput,
+  type ValidateOutput,
+  type WidgetToolName,
+} from "./generated/contracts.js";
+export { generateContractsSource, GENERATED_PATH, schemaToType, WIDGET_TOOL_NAMES } from "./generate.js";

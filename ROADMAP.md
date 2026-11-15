@@ -114,9 +114,9 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 
 Prefer **both**. A and B are equal citizens over the same schema-generated tool contracts — not “widget first, AI SDK if time.”
 
-- [ ] **A:** MCP app widgets (ChatGPT Apps / MCP Apps bridge) on the same tools — major web frameworks (React first, then Vue, Svelte, and peers)
+- [ ] **A:** MCP app widgets (ChatGPT Apps / MCP Apps bridge) on the same tools — major web frameworks (React first, then Vue, Svelte, and peers) (in progress: `packages/widget` ships the React widget — list, edit with live `validate`, dry-run preview, save — verified in a local harness, see [docs/widget](docs/widget/README.md); an MCP Apps host run and the Vue and Svelte adapters are still to do)
 - [ ] **B:** Small web UI using Vercel AI SDK or Anthropic/OpenAI that calls the same backend capabilities (in progress: `packages/ai-sdk` discovers the server's tools over MCP and runs a query, validate, mutate CLI example with `streamText`; the web UI is still to do)
-- [ ] Schema → widget prop schemas and AI SDK tool definitions stay in sync with server tools (document the generation path)
+- [ ] Schema → widget prop schemas and AI SDK tool definitions stay in sync with server tools (document the generation path) (widget prop types are generated from `toolContracts` with a drift test; the AI SDK path reads `tools/list` directly)
 - [ ] Demo GIF or short Loom in README; tools still work headless without the UI
 - [ ] Tag `v0.3.0` — “protocol + product UI + product code path”
 

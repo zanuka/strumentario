@@ -219,6 +219,18 @@ In code: `const client = await connectMcpClient({ url }); const tools = await lo
 
 Unit tests (`pnpm test`) need no secrets or network: they run a mock model against the in-process server and against a local HTTP server. Whether a model *chooses* these tools well is the Phase 2 question, measured by the tool-selection eval; its summary is [docs/evals/2026-11-10-agent-tool-selection.md](docs/evals/2026-11-10-agent-tool-selection.md) (a live model run is still pending, so it reports no numbers yet).
 
+### React widget
+
+`packages/widget` is the MCP App widget surface (React first). It lists pages (`query`), edits with live `validate` feedback, and saves through `mutate` after a dry-run preview. It calls the same tools as the CLI and the AI SDK path; its prop types are generated from the server's tool contracts, and a drift test fails when they go stale. The controller is framework-neutral and the React layer is thin, so Vue and Svelte adapters (issue #20) plug into the same contracts.
+
+![Widget demo: list, edit, live validate error, dry-run preview, save](docs/widget/demo.gif)
+
+```bash
+pnpm --filter @strumentario/widget harness   # http://127.0.0.1:3002/, a local harness with the server built in
+```
+
+Experiment summaries sit next to this demo: the [baseline scorer run](docs/evals/2026-11-08-baseline.md) and the [agent tool-selection eval](docs/evals/2026-11-10-agent-tool-selection.md) (no live model run yet, so no Braintrust numbers). The widget adds no tool and no eval case of its own. It was exercised in a local harness, **not** in an MCP Apps host. Details and limits: [docs/widget](docs/widget/README.md).
+
 ### CLI quick start
 
 The `strumentario` CLI is a thin MCP client: every command goes through the server's tools and resources, so there is no CLI-only API or write path.
@@ -293,7 +305,7 @@ None of this helps if an agent picks the wrong tool, for example a write when it
 
 ## Status
 
-Strumentario is in the earliest public stage. We are building in the open. The TypeScript monorepo (`packages/server`, `packages/cli`, `packages/evals`) ships the Phase 1 MCP server (`query`, `mutate`, `validate`, `scaffold`, the change journal resource) and the Phase 2 local eval harness; `v0.1.0` is the first tagged release. See the [changelog](CHANGELOG.md).
+Strumentario is in the earliest public stage. We are building in the open. The TypeScript monorepo (`packages/server`, `packages/cli`, `packages/evals`, plus the `packages/ai-sdk` and `packages/widget` surfaces) ships the Phase 1 MCP server (`query`, `mutate`, `validate`, `scaffold`, the change journal resource) and the Phase 2 local eval harness; `v0.1.0` is the first tagged release. See the [changelog](CHANGELOG.md).
 
 ```bash
 pnpm install

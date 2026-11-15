@@ -1,0 +1,49 @@
+{
+  "name": "@strumentario/widget",
+  "version": "0.0.0",
+  "description": "MCP App widget (React first) over the Strumentario query, validate and mutate tools; prop types generated from the server's tool contracts",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "generate": "pnpm --filter @strumentario/server run build && pnpm run build && node dist/generate-cli.js",
+    "generate:check": "pnpm --filter @strumentario/server run build && pnpm run build && node dist/generate-cli.js --check",
+    "harness": "pnpm --filter @strumentario/server run build && pnpm run build && node dist/harness/serve.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0"
+  },
+  "devDependencies": {
+    "@strumentario/cli": "workspace:*",
+    "@strumentario/server": "workspace:*",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "esbuild": "^0.28.0",
+    "jsdom": "^26.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
