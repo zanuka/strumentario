@@ -1,0 +1,38 @@
+{
+  "name": "@strumentario/ai-sdk",
+  "version": "0.0.0",
+  "description": "Vercel AI SDK product path: connects to the Strumentario MCP server as a client and hands its tools to streamText",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "strumentario-ai": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "example": "pnpm run build && node dist/cli.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "ai": "^5.0.0",
+    "@ai-sdk/anthropic": "^2.0.0",
+    "@ai-sdk/openai": "^2.0.0"
+  },
+  "devDependencies": {
+    "@strumentario/server": "workspace:*"
+  }
+}
