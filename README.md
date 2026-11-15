@@ -204,6 +204,21 @@ What the host sees: tools `query`, `validate`, `mutate`, `scaffold`, `repair`; r
 
 Terminal agents and several agents at once: see the [CLI guide](docs/cli-guide.md) and the [multi-agent guide](docs/multi-agent.md).
 
+### AI SDK path
+
+`packages/ai-sdk` is the Vercel AI SDK surface. It connects to a running server as an ordinary MCP client, reads `tools/list`, and hands those tools to `streamText`. No tool name, description or schema is written by hand: whatever the server publishes is what the model sees, and every execution is a `tools/call`. It is an equal citizen of the widget path: same tools, no private API. The server and the CLI never import it, and a provider key is only needed to run the example.
+
+```bash
+pnpm --filter @strumentario/server serve        # terminal 1: http://127.0.0.1:3001/mcp
+ANTHROPIC_API_KEY=... pnpm --filter @strumentario/ai-sdk example   # terminal 2 (or OPENAI_API_KEY)
+```
+
+The example asks the model to **query** a page, **validate** a draft, then **mutate** (preview an update). `mutate` is forced to `dryRun: true` unless you pass `--write`, whatever the model asks for. Flags: `--url`, `--slug`, `--write`. Without a key it prints how to set one and exits `0`. Environment: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`, optional `AI_SDK_ANTHROPIC_MODEL` / `AI_SDK_OPENAI_MODEL`, `STRUMENTARIO_MCP_URL`, `STRUMENTARIO_MCP_TOKEN`.
+
+In code: `const client = await connectMcpClient({ url }); const tools = await loadMcpTools(client); streamText({ model, tools, prompt })`.
+
+Unit tests (`pnpm test`) need no secrets or network: they run a mock model against the in-process server and against a local HTTP server. Whether a model *chooses* these tools well is the Phase 2 question, measured by the tool-selection eval; its summary is [docs/evals/2026-11-10-agent-tool-selection.md](docs/evals/2026-11-10-agent-tool-selection.md) (a live model run is still pending, so it reports no numbers yet).
+
 ### CLI quick start
 
 The `strumentario` CLI is a thin MCP client: every command goes through the server's tools and resources, so there is no CLI-only API or write path.
