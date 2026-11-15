@@ -17,6 +17,7 @@ describe("getServerPackageInfo", () => {
       "mutate",
       "validate",
       "scaffold",
+      "repair",
     ]);
   });
 });

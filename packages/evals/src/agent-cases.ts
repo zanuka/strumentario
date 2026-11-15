@@ -9,7 +9,7 @@ import type { GoldenPage } from "./types.js";
  * `{ $contains: "text" }` accepts a string containing it. Prompts state their literal values
  * (slugs, revisions, URLs) so the expected arguments are not a guess.
  */
-export type AgentCategory = "query" | "validate" | "mutate" | "scaffold";
+export type AgentCategory = "query" | "validate" | "mutate" | "scaffold" | "repair";
 
 export interface AgentCase {
   id: string;
@@ -160,5 +160,21 @@ export const agentCases: readonly AgentCase[] = [
     intent: "The auth flag belongs to scaffold host-config; it is not a store change.",
     prompt: "Show me the host config entries, with a bearer Authorization header. Don't write any files.",
     expected: { tool: "scaffold", input: { target: "host-config", auth: true } },
+  },
+
+  // --- repair ---
+  {
+    id: "repair-failing-generated-client",
+    category: "repair",
+    intent: "Near miss: fixing a generated file that fails type-checking is repair, not scaffold (which generates) and not mutate (which edits pages).",
+    prompt: "The generated file strumentario-client.ts failed type-checking with TS2304: Cannot find name 'Missing'. Its whole content is `export const x: Missing = 1;`. Repair it, using at most 2 rounds.",
+    expected: { tool: "repair", input: { files: [{ path: "strumentario-client.ts", content: { $contains: "Missing" } }], maxRounds: 2 } },
+  },
+  {
+    id: "repair-invalid-host-config",
+    category: "repair",
+    intent: "Near miss: a host config file that fails schema validation is repaired with the file as sent, not regenerated blindly with scaffold.",
+    prompt: "My .mcp.json is rejected by schema validation. Its whole content is `{\"mcpServers\":{}}`. Repair that file.",
+    expected: { tool: "repair", input: { files: [{ path: ".mcp.json", content: { $contains: "mcpServers" } }] } },
   },
 ];

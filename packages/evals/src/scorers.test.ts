@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { goldenCases } from "./golden.js";
 import { runCase } from "./harness.js";
 import { demonstrateRegression } from "./regression.js";
-import { concurrencySafety, noUnexpectedSideEffect, outputSchemaValid, scoreCase, toolChoice } from "./scorers.js";
+import { concurrencySafety, noUnexpectedSideEffect, outputSchemaValid, repairConverged, scoreCase, toolChoice } from "./scorers.js";
 import type { CallRecord, CaseResult, GoldenCase, PageSnapshot, StepRecord, ToolGoldenCase } from "./types.js";
 
 const page = (slug: string, revision: string): PageSnapshot => ({ slug, title: slug, body: "b", revision });
@@ -161,6 +161,63 @@ describe("concurrency_safety", () => {
 
   it("is not applicable without parallel steps", () => {
     expect(concurrencySafety({ case: spec, result: resultOf([step([])]) }).score).toBeNull();
+  });
+});
+
+describe("repair_converged", () => {
+  const files = [{ path: "a.ts", content: "x" }];
+  const converged = {
+    ok: true,
+    converged: true,
+    stopReason: "converged",
+    maxRounds: 3,
+    roundsUsed: 1,
+    errorCounts: [2, 0],
+    rounds: [{ round: 1, errorsBefore: 2, errorsAfter: 0, kept: true }],
+    remainingErrors: [],
+  };
+  const stuck = {
+    ok: true,
+    converged: false,
+    stopReason: "no_progress",
+    maxRounds: 3,
+    roundsUsed: 1,
+    errorCounts: [2],
+    rounds: [{ round: 1, errorsBefore: 2, errorsAfter: 2, kept: false }],
+    remainingErrors: [{ path: "a.ts" }, { path: "a.ts" }],
+  };
+  const score = (structured: unknown, convergeWithin?: number) =>
+    repairConverged({ case: { ...toolCase([]), ...(convergeWithin === undefined ? {} : { convergeWithin }) }, result: resultOf([step([call("repair", { files }, structured)])]) });
+
+  it("scores 1 for a repair that converged within the case's round budget", () => {
+    expect(score(converged, 3).score).toBe(1);
+  });
+
+  it("fails a repair that needed more rounds than the case allows", () => {
+    const out = score({ ...converged, roundsUsed: 2, rounds: [{ kept: true, errorsBefore: 2, errorsAfter: 1 }, { kept: true, errorsBefore: 1, errorsAfter: 0 }] }, 1);
+    expect(out.score).toBe(0);
+    expect(out.problems.join()).toContain("needed 2 rounds");
+  });
+
+  it("fails a repair that did not converge when the case expects it to", () => {
+    const out = score(stuck, 3);
+    expect(out.score).toBe(0);
+    expect(out.problems.join()).toContain("did not converge within 3 rounds");
+  });
+
+  it("accepts an honest non-converging result when no convergence is expected", () => {
+    expect(score(stuck).score).toBe(1);
+  });
+
+  it("catches a loop that broke its own stop condition", () => {
+    expect(score({ ...stuck, stopReason: "max_rounds" }).problems.join()).toContain("stopped at max_rounds after 1 of 3 rounds");
+    expect(score({ ...stuck, remainingErrors: [] }).problems.join()).toContain("no remaining errors");
+    expect(score({ ...converged, roundsUsed: 4 }).problems.join()).toContain("more than its maxRounds");
+    expect(score({ ...stuck, rounds: [{ kept: true, errorsBefore: 2, errorsAfter: 2 }] }).problems.join()).toContain("did not reduce");
+  });
+
+  it("is not applicable without a repair call", () => {
+    expect(repairConverged({ case: toolCase([]), result: resultOf([step([call("query", {}, {})])]) }).score).toBeNull();
   });
 });
 

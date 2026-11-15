@@ -142,7 +142,7 @@ This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp
 - `PORT` — listen port, default `3001`.
 - `HOST` — bind address, default `127.0.0.1` (loopback only).
 - `MCP_AUTH_TOKEN` — optional shared secret; when set, `/mcp` requires `Authorization: Bearer <token>`. It acts as a write token.
-- `MCP_READ_TOKEN` / `MCP_WRITE_TOKEN` — optional split: a read token may call `readOnlyHint: true` tools (`query`, `validate`) and read resources; a write token may call everything (`mutate`, `scaffold`). Not applied over stdio. See [token scopes](docs/server-transport-and-soak.md#token-scopes).
+- `MCP_READ_TOKEN` / `MCP_WRITE_TOKEN` — optional split: a read token may call `readOnlyHint: true` tools (`query`, `validate`, `repair`) and read resources; a write token may call everything (`mutate`, `scaffold`). Not applied over stdio. See [token scopes](docs/server-transport-and-soak.md#token-scopes).
 - `MCP_TRANSPORT` — `http` (default) or `stdio`. Streamable HTTP stays the primary path; stdio is the same server and tools for hosts that spawn it as a child process, with no port. Equivalent to the `--stdio` flag.
 - `STRUMENTARIO_AGENT` — stdio only: the agent name recorded for calls (there are no headers over stdio).
 
@@ -158,6 +158,7 @@ To use stdio, point the host at `node /abs/path/to/packages/server/dist/serve.js
 | `validate` | yes | Check a page draft against the schema without storing it. |
 | `mutate` | no | Create, update or delete one page. Dry-run by default; `expectedRevision` guards updates and deletes, `idempotencyKey` makes retries safe. Every call is journaled. |
 | `scaffold` | no | Generate a typed client or host config from the schema. Returns files in memory; writes only with `write: true` and `outDir`. |
+| `repair` | yes | Fix scaffold files that fail `tsc` (`.ts`) or schema validation (`.json` host config). Feeds the errors back and re-checks, at most `maxRounds` (default 3) and stops early when a round does not shrink the errors. Returns the corrected files, rounds used, error counts per round and any remaining errors. Deterministic; touches no files or pages. |
 
 | Resource | Contents |
 | --- | --- |
@@ -199,7 +200,7 @@ Put the name and URL before `--header`: the flag takes several values and swallo
 
 **Host that spawns the server (stdio).** No port, no token; see [server transport](docs/server-transport-and-soak.md#stdio-transport) for the entry.
 
-What the host sees: tools `query`, `validate`, `mutate`, `scaffold`; resources `strumentario://schemas/handbook-page`, `strumentario://pages/{slug}` and `strumentario://journal`; prompt `review-draft`.
+What the host sees: tools `query`, `validate`, `mutate`, `scaffold`, `repair`; resources `strumentario://schemas/handbook-page`, `strumentario://pages/{slug}` and `strumentario://journal`; prompt `review-draft`.
 
 Terminal agents and several agents at once: see the [CLI guide](docs/cli-guide.md) and the [multi-agent guide](docs/multi-agent.md).
 
@@ -219,6 +220,7 @@ strumentario call validate --json \
 strumentario call mutate --input-file page.json      # dry-run unless the input says "dryRun": false
 strumentario call mutate --help                      # description and schema come from the server
 strumentario call scaffold --input '{"target":"host-config"}'   # typed client or host config, generated from the schema; returns files, writes nothing
+strumentario call repair --input '{"files":[{"path":"strumentario-client.ts","content":"..."}]}'   # fix scaffold files that fail tsc or schema checks
 strumentario batch --input-file calls.jsonl --concurrency 8    # many calls over one connection; {id,tool,input} lines in, {id,ok,result|error} lines out (see docs/batch.md)
 strumentario resource strumentario://schemas/handbook-page
 strumentario journal --limit 20                      # who changed what, from the change journal (see docs/journal.md)
@@ -240,7 +242,7 @@ Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/m
 1. Start the server with `pnpm --filter @strumentario/server serve`.
 2. In another terminal, run `npx @modelcontextprotocol/inspector` and open its local URL.
 3. **Add Servers → Add manually**, set the transport to `streamable-http` and the URL to `http://localhost:3001/mcp` (older Inspector versions: pick **Streamable HTTP** and enter the URL), then connect.
-4. Open **Tools**: `query`, `mutate`, `validate` and `scaffold` are listed. Open **Resources** for the page schema, stored pages and the change journal, and **Prompts** for `review-draft`.
+4. Open **Tools**: `query`, `mutate`, `validate`, `scaffold` and `repair` are listed. Open **Resources** for the page schema, stored pages and the change journal, and **Prompts** for `review-draft`.
 5. Choose `validate`, enter `{"title":"Getting started","slug":"getting-started","body":"Draft content."}` as `instance` and run it: the result is `{"valid": true, "errors": []}`.
 
 Inspector 2.13 shows a "Schema portability" warning on `validate` and `mutate`: their `instance` / `page` input is declared as an unconstrained value. The calls work; see the [changelog](CHANGELOG.md#known-issues).
@@ -256,7 +258,7 @@ What the tools give you over raw file edits:
 - **Retries are safe.** An `idempotencyKey` replays the original result instead of applying the change twice.
 - **You can see who changed what.** Callers identify themselves (`X-Strumentario-Agent` or `--agent`) and every `mutate` outcome lands in the [change journal](docs/journal.md). The id is attribution, not authentication.
 - **Access has two levels.** `MCP_READ_TOKEN` may call `query` and `validate` only; `MCP_WRITE_TOKEN` may call everything.
-- **One contract everywhere.** Every host, the [CLI](docs/cli-guide.md) (including [`batch`](docs/batch.md)) and headless factories such as Maglio call the same four tools.
+- **One contract everywhere.** Every host, the [CLI](docs/cli-guide.md) (including [`batch`](docs/batch.md)) and headless factories such as Maglio call the same tools.
 
 Plain agent editing is enough for one person, one agent and occasional edits. Put Strumentario in front when several agents write to the same content, when runs are unattended, or when content has to stay valid and traceable. The [multi-agent guide](docs/multi-agent.md) walks through two agents racing on one page.
 

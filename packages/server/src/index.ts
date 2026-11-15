@@ -1,12 +1,13 @@
 export const PACKAGE_NAME = "@strumentario/server" as const;
 
-export type ContentPrimitive = "query" | "mutate" | "validate" | "scaffold";
+export type ContentPrimitive = "query" | "mutate" | "validate" | "scaffold" | "repair";
 
 export const CONTENT_PRIMITIVES: readonly ContentPrimitive[] = [
   "query",
   "mutate",
   "validate",
   "scaffold",
+  "repair",
 ] as const;
 
 export interface ServerPackageInfo {
@@ -104,6 +105,20 @@ export {
   type ScaffoldResult,
   type ScaffoldTarget,
 } from "./scaffold.js";
+export {
+  checkFiles,
+  createModelFixer,
+  createTemplateFixer,
+  repair,
+  REPAIR_MODEL_ENV,
+  type RepairError,
+  type RepairFixer,
+  type RepairInput,
+  type RepairOptions,
+  type RepairResult,
+  type RepairRound,
+  type RepairStopReason,
+} from "./repair.js";
 export { queryPages, type QueryInput, type QueryResult } from "./query.js";
 export {
   DATA_DIR_ENV,

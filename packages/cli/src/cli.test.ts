@@ -123,7 +123,7 @@ describe("tools and call", () => {
     const result = await cli(["tools", "--json", "--url", url]);
     expect(result.code).toBe(EXIT.ok);
     const { tools } = JSON.parse(result.stdout) as { tools: { name: string; inputSchema: unknown }[] };
-    expect(tools.map((t) => t.name).sort()).toEqual(["mutate", "query", "scaffold", "validate"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["mutate", "query", "repair", "scaffold", "validate"]);
     expect(tools.every((t) => typeof t.inputSchema === "object")).toBe(true);
   });
 

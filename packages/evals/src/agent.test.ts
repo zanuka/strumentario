@@ -37,6 +37,7 @@ function scriptedModel(overrides: Record<string, ModelChoice> = {}): ToolChoiceM
 /** Turns the shape markers into concrete argument values. */
 function materialize(value: unknown): Record<string, unknown> {
   const fill = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(fill);
     if (typeof v === "object" && v !== null && "$present" in v) return "some value";
     if (typeof v === "object" && v !== null && "$contains" in v) return `./${(v as { $contains: string }).$contains}`;
     if (typeof v === "object" && v !== null && !Array.isArray(v)) return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fill(x)]));

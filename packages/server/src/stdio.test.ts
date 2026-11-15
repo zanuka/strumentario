@@ -73,7 +73,7 @@ describe("stdio transport", () => {
   it("lists tools and calls validate", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
-    expect(tools.map((tool) => tool.name).sort()).toEqual(["mutate", "query", "scaffold", "validate"]);
+    expect(tools.map((tool) => tool.name).sort()).toEqual(["mutate", "query", "repair", "scaffold", "validate"]);
 
     const result = await client.callTool({
       name: "validate",

@@ -136,7 +136,7 @@ describe("scope resolution", () => {
 describe("scope follows the tool annotations", () => {
   it("makes exactly the readOnlyHint: true tools readable, from the generated contracts", () => {
     const byScope = Object.fromEntries(toolContracts.map((tool) => [tool.name, requiredScope(tool.annotations)]));
-    expect(byScope).toEqual({ query: "read", validate: "read", mutate: "write", scaffold: "write" });
+    expect(byScope).toEqual({ query: "read", validate: "read", mutate: "write", scaffold: "write", repair: "read" });
   });
 
   it("treats a missing or false readOnlyHint as write", () => {

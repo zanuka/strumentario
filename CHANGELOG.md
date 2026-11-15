@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- `repair` tool (Phase 4): feeds `tsc` and schema-validation errors from scaffold output back into a bounded repair loop (default 3 rounds, early stop when the error count does not shrink) and returns the corrected files, rounds used, error counts per round and any remaining errors. Read-only annotations, so a read token may call it. The default path is deterministic; an optional model fixer sits behind `STRUMENTARIO_REPAIR_MODEL`.
+- Evals: six `repair` golden cases, the `repair_converged` scorer, and two agent tool-selection prompts for `repair`. Because `repair` is a new tool, the generated client and host config now include it.
+
 ## v0.1.0 (upcoming; the maintainer tags after merge)
 
 "Agents can call my content instruments." Phase 1 and the Phase 2 local eval harness.
