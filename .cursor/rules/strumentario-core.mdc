@@ -6,9 +6,9 @@ alwaysApply: true
 
 # Strumentario Core Rules
 
-You are working on **Strumentario**, an open-source MCP content toolkit. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — measurable with Braintrust — sitting between Nocciolo (knowledge) and Maglio (factories).
+You are working on **Strumentario**, an open-source MCP content toolkit. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — measurable with Braintrust — sitting between Orto (knowledge) and Maglio (factories).
 
-Strumentario complements Nocciolo (durable knowledge / company brain) and Maglio (factory scaffold). Nocciolo supplies context; Maglio shapes production systems; Strumentario provides the MCP instrument layer.
+Strumentario complements Orto (durable knowledge / company brain) and Maglio (factory scaffold). Orto supplies context; Maglio shapes production systems; Strumentario provides the MCP instrument layer.
 
 ## Non-negotiable principles
 
@@ -51,4 +51,4 @@ Do not collapse server, UI, and evals into a single opaque package.
 - Changing tool contracts without considering eval coverage
 - Treating any MCP App widget or AI SDK UI as the source of truth instead of the MCP surface
 - Competing on decorator elegance or richest widget auto-discovery (peer territory)
-- Becoming an agent runtime or durable memory system (Nocciolo / Maglio)
+- Becoming an agent runtime or durable memory system (Orto / Maglio)

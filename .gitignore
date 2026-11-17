@@ -58,9 +58,9 @@ Desktop.ini
 *.server-state.json
 .strumentario/data/journal.jsonl
 
-# Nocciolo local / generated state
-.nocciolo/local/
-.nocciolo/cache/
+# Orto local / generated state
+.orto/local/
+.orto/cache/
 *.bank-state.json
 
 # Temporary

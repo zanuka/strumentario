@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Renamed the Nocciolo project reference to Orto (https://github.com/zanuka/orto): `.nocciolo/` is now `.orto/`, `docs/nocciolo-brain-details.md` is now `docs/orto-brain-details.md`, the CLI is `orto` and the API key variable is `ORTO_HINDSIGHT_API_KEY`. Docs and config only.
+
 - `repair` tool (Phase 4): feeds `tsc` and schema-validation errors from scaffold output back into a bounded repair loop (default 3 rounds, early stop when the error count does not shrink) and returns the corrected files, rounds used, error counts per round and any remaining errors. Read-only annotations, so a read token may call it. The default path is deterministic; an optional model fixer sits behind `STRUMENTARIO_REPAIR_MODEL`.
 - Evals: six `repair` golden cases, the `repair_converged` scorer, and two agent tool-selection prompts for `repair`. Because `repair` is a new tool, the generated client and host config now include it.
 - `@strumentario/ai-sdk`: Vercel AI SDK product path. Connects to the server as an MCP client, exposes the tools it publishes to `streamText`, and ships a runnable query, validate, mutate (dry run by default) example. Optional provider keys; the server and CLI do not depend on it.

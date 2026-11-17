@@ -4,7 +4,7 @@ This file is the primary source of truth for any AI agent working on Strumentari
 
 ## Project Identity
 
-Strumentario is a local-first **MCP content toolkit**. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Nocciolo) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
+Strumentario is a local-first **MCP content toolkit**. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Orto) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
 
 We are building this in public as open source.
 
@@ -36,8 +36,8 @@ We are building this in public as open source.
 8. **Clear boundaries**  
    Keep server, schema, surfaces, scaffold/repair, and evals separated. Do not collapse them into one opaque package.
 
-9. **Complement Nocciolo and Maglio**  
-   Nocciolo seeds durable context instruments can recall against; Maglio factories can call Strumentario tools overnight. Keep those seams explicit even before deep integration. Do not absorb runtime/memory or factory concerns into this repo.
+9. **Complement Orto and Maglio**  
+   Orto seeds durable context instruments can recall against; Maglio factories can call Strumentario tools overnight. Keep those seams explicit even before deep integration. Do not absorb runtime/memory or factory concerns into this repo.
 
 ## Architecture Expectations
 
@@ -95,7 +95,7 @@ We are building this in public as open source.
 - Do not make cloud-only paths the default for the core MCP server
 - Do not treat any MCP App widget or AI SDK UI as the source of truth instead of the MCP surface
 - Do not compete on decorator elegance or richest widget auto-discovery — that is peer territory
-- Do not turn Strumentario into an agent runtime or durable memory system (Nocciolo / Maglio)
+- Do not turn Strumentario into an agent runtime or durable memory system (Orto / Maglio)
 - Do not add a large miscellaneous tool catalog in Phase 1 to look “complete”
 - Do not skip or bury Phase 2 evals to rush a surface demo
 - Do not write real secrets into the tree
@@ -104,7 +104,7 @@ We are building this in public as open source.
 
 See `ROADMAP.md`. At the time of writing we are in early foundation (Phase 0 → Phase 1: remote MCP server + Inspector path). Protect the differentiation bets and phase gates documented there.
 
-<!-- nocciolo:hindsight-bank -->
+<!-- orto:hindsight-bank -->
 
 ## Project memory bank (Hindsight)
 
@@ -115,7 +115,7 @@ Prefer the project Hindsight bank `strumentario` for durable strumentario contex
 - Treat repo docs and ADRs as source of truth; use the bank as the agent-facing memory of those sources.
 - Do not dump secrets, credentials, or ephemeral chat into the bank.
 
-<!-- /nocciolo:hindsight-bank -->
+<!-- /orto:hindsight-bank -->
 
 ## Maintaining this file
 

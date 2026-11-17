@@ -1,21 +1,21 @@
-# Stack seams: Nocciolo, Strumentario, Maglio
+# Stack seams: Orto, Strumentario, Maglio
 
 Strumentario sits in the middle of a three-layer stack. Each layer is a separate project that works alone; the seams below are the only places they touch.
 
 ```text
-Nocciolo (knowledge)  ──recall──▶  agent  ──tools/call──▶  Strumentario (instruments)  ◀──tools/call, headless──  Maglio (factory)
+Orto (knowledge)  ──recall──▶  agent  ──tools/call──▶  Strumentario (instruments)  ◀──tools/call, headless──  Maglio (factory)
  durable project context            reads context, decides   query · validate · mutate · scaffold + journal         overnight / assembly-line jobs
 ```
 
 | Layer | Owns | Does not own |
 | --- | --- | --- |
-| **Nocciolo** | Durable project knowledge and recall (the memory bank, for example Hindsight). | Content mutation, validation, factories. |
+| **Orto** | Durable project knowledge and recall (the memory bank, for example Hindsight). | Content mutation, validation, factories. |
 | **Strumentario** | The instruments: typed `query` / `validate` / `mutate` / `scaffold`, the page store, the change journal, evals of those tools. | Memory, orchestration, scheduling, agent runtime. |
 | **Maglio** | Factory runs: which stage runs when, retries, overnight assembly. | The content primitives themselves. |
 
-## Nocciolo ↔ Strumentario: recall, then instrument
+## Orto ↔ Strumentario: recall, then instrument
 
-Nocciolo supplies *what is true and why* (standards, decisions, domain invariants). Strumentario supplies *what you can do about content*. The seam is the agent: it recalls from Nocciolo through that project's own MCP tools, then calls Strumentario's tools with the result. There is no code dependency in either direction. Strumentario never reads Nocciolo's store and Nocciolo never calls Strumentario. Putting both servers in one host config is the integration; the `review-draft` prompt and `validate` are where recalled standards get checked against the schema. Setup of the memory bank: [nocciolo-brain-details](../nocciolo-brain-details.md).
+Orto supplies *what is true and why* (standards, decisions, domain invariants). Strumentario supplies *what you can do about content*. The seam is the agent: it recalls from Orto through that project's own MCP tools, then calls Strumentario's tools with the result. There is no code dependency in either direction. Strumentario never reads Orto's store and Orto never calls Strumentario. Putting both servers in one host config is the integration; the `review-draft` prompt and `validate` are where recalled standards get checked against the schema. Setup of the memory bank: [orto-brain-details](../orto-brain-details.md).
 
 ## Strumentario ↔ Maglio: the headless contract
 

@@ -4,7 +4,7 @@ Phased plan for the public open-source demo. Treat the repo as a product with mi
 
 Primary goal for v1.0: developers and contributors can clone or connect the repo in under 15 minutes and see (1) remote MCP tools working in an agent host, (2) an eval suite that fails/passes meaningfully, and (3) both an MCP app widget *and* a streamed AI SDK path documented with a short architecture note — or, at minimum, one surface shipped with the other clearly stubbed as a first-class equal.
 
-**Positioning:** Strumentario is a local-first MCP content toolkit. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Nocciolo) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
+**Positioning:** Strumentario is a local-first MCP content toolkit. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Orto) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
 
 It treats MCP as a **durable content instrument layer** instead of another one-off tool adapter. Most options today solve the “make a server run” problem. Strumentario aims at the harder, more common problem: standing up a coherent, measurable, multi-surface set of instruments that agents and humans can actually share—and keeping that set under the developer’s control.
 
@@ -21,7 +21,7 @@ These are not optional polish. They gate how we implement each phase.
 3. **Own the content-domain language** — query / mutate / validate / scaffold are the product. Resist a large catalog of miscellaneous Phase 1 demos.
 4. **AI SDK path is equal, not secondary** — Prefer shipping both MCP App widgets (major web frameworks) and AI SDK product path; if sequencing forces a choice, keep the other as an explicit first-class stub with the same tool contracts.
 5. **Landscape honesty** — Acknowledge official SDKs + stdio examples, mcp-use, MCP Framework / mcpkit-style, FastMCP, official MCP Apps kits, and generation tools early so readers do not invent our positioning for us. Opinions stay tied to experiments.
-6. **Nocciolo / Maglio seams stay explicit** — Document handoffs even before deep integration: Nocciolo seeds durable context instruments recall against; Maglio factories call Strumentario tools overnight.
+6. **Orto / Maglio seams stay explicit** — Document handoffs even before deep integration: Orto seeds durable context instruments recall against; Maglio factories call Strumentario tools overnight.
 7. **Postmortems and architecture notes are product** — Hiring and contributor gold; not leftover docs.
 
 ### Where other options leave developers
@@ -51,7 +51,7 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 | Local-first (no cloud required for core loop) | Yes | Soft (has Manufact path) | Yes | Yes | Yes | Soft / mixed | **Hard principle** |
 | Content-domain primitives (query/mutate/validate/scaffold) | DIY | Generic tools | Generic tools | Generic | N/A | Ad-hoc generated | **Explicit high-signal set** |
 | Ongoing ownership / measurable iteration | DIY | Moderate | Moderate | Moderate | Widget-focused | Weak after generate | **Core product loop** |
-| Knowledge ↔ instruments ↔ factory story | Standalone | Standalone | Standalone | Standalone | Standalone | Standalone | **Nocciolo + Maglio alignment** |
+| Knowledge ↔ instruments ↔ factory story | Standalone | Standalone | Standalone | Standalone | Standalone | Standalone | **Orto + Maglio alignment** |
 | Architecture notes + failure postmortems as artifacts | Rare | Rare | Rare | Rare | Rare | Rare | **Phase 5, hiring/demo** |
 
 ### What not to chase for differentiation
@@ -60,7 +60,7 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 - Richest React widget runtime or auto-discovery magic → mcp-use and official Apps kits
 - Fastest one-shot server generation from APIs/NL → generation tools (e.g. mcp-anything)
 - Multi-tenant auth perfection, plugin marketplaces, full CMS parity → already non-goals
-- Becoming “the” agent runtime or memory system → Nocciolo / Maglio territory
+- Becoming “the” agent runtime or memory system → Orto / Maglio territory
 
 **Bottom line for phase gating:** other projects mostly help you *build an MCP server* (or widgets on top of one). Each phase should advance *ownership of a durable, measurable instrument set*—same tools agents and humans share—under local control.
 
@@ -140,7 +140,7 @@ Prefer **both**. A and B are equal citizens over the same schema-generated tool 
 
 ## Phase 5 — Polish for applications
 
-- [ ] Architecture doc: tools vs resources vs prompts; schema→surface generation; auth model; eval strategy; Nocciolo/Maglio seams (seams note: [`docs/architecture/stack-seams.md`](docs/architecture/stack-seams.md))
+- [ ] Architecture doc: tools vs resources vs prompts; schema→surface generation; auth model; eval strategy; Orto/Maglio seams (seams note: [`docs/architecture/stack-seams.md`](docs/architecture/stack-seams.md))
 - [ ] 2–3 failure postmortems (`docs/postmortems/`) that show prompt/tool intuition — treat as product artifacts
 - [ ] Landscape note in `docs/landscape.md` (expand the README paragraph; keep opinions tied to this project’s experiments)
 - [ ] Contributor guide callouts: where PRs have the most leverage (evals, primitives, generation, postmortems)
@@ -184,7 +184,7 @@ Do **not** block the first public tags on:
 - Large plugin marketplace
 - Event-driven multi-repo orchestration (that belongs later or in Maglio)
 - Out-competing mcp-use on widget auto-discovery, mcpkit / FastMCP on decorator elegance, or generation tools on one-shot API→server speed
-- Becoming an agent runtime or durable memory system (Nocciolo / Maglio)
+- Becoming an agent runtime or durable memory system (Orto / Maglio)
 
 Depth on MCP + evals + coherent multi-surface content instruments beats breadth.
 
@@ -211,7 +211,7 @@ Minimum credible triad for most applications: **MCP server → Braintrust → MC
 - “One schema drives server tools, an MCP App widget, and an AI SDK product path — not three hand-forked stacks.”
 - “Braintrust evals for tool selection / scaffold quality; caught a real regression — and that evidence shipped before the widget was the whole story.”
 - “Scaffold + repair loop with compile/structure checks; agents build, not only query.”
-- “Clear handoff story: Nocciolo (knowledge) → Strumentario (instruments) → Maglio (factories).”
+- “Clear handoff story: Orto (knowledge) → Strumentario (instruments) → Maglio (factories).”
 - “Architecture + postmortems + landscape note make the craft and the differentiation obvious.”
 - “This is not another adapter—I own a durable, measurable instrument set under local control, shared by agents and humans.”
 

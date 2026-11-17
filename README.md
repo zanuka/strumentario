@@ -4,7 +4,7 @@
 
 ![One schema → shared instruments for agents and humans](images/strumentario-schema-diagram.png)
 
-Strumentario is a local-first MCP content toolkit. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Nocciolo) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
+Strumentario is a local-first MCP content toolkit. One schema produces a remote Streamable HTTP server, MCP App widgets across major web frameworks, AI SDK product paths, and agentic scaffolds — all measurable with Braintrust and designed to sit between durable project knowledge (Orto) and production factories (Maglio). Protocol first, product second, evals non-negotiable.
 
 It treats MCP as a **durable content instrument layer** instead of another one-off tool adapter. Most options today solve the “make a server run” problem. Strumentario aims at the harder, more common problem: standing up a coherent, measurable, multi-surface set of instruments that agents and humans can actually share—and keeping that set under the developer’s control.
 
@@ -27,7 +27,7 @@ Agents and humans share one coherent instrument set instead of reinventing the w
 
 The schema is the single source of truth that *generates* those surfaces: typed tool handlers, resource definitions, widget prop schemas, AI SDK tool definitions, and scaffold templates. Discovery and registration matter; coherence across protocol, product UI, product code path, and evals is the point.
 
-Aligns with [Nocciolo](https://github.com/) (durable company-brain / memory config) and [Maglio](https://github.com/) (factory scaffold and assembly-line config). Nocciolo supplies durable context; Maglio shapes production systems; Strumentario provides the MCP instrument layer that both can use.
+Aligns with [Orto](https://github.com/) (durable company-brain / memory config) and [Maglio](https://github.com/) (factory scaffold and assembly-line config). Orto supplies durable context; Maglio shapes production systems; Strumentario provides the MCP instrument layer that both can use.
 
 ## The Problem
 
@@ -81,7 +81,7 @@ The MCP landscape already has strong remote servers (MCP Framework, FastMCP), ex
 | **One schema → three surfaces + evals** | Protocol server, MCP App widgets across major web frameworks, and AI SDK product path are equal citizens generated from one declarative core |
 | **Content-domain primitives** | query / mutate / validate / scaffold — a small high-signal set, not an unbounded tool catalog |
 | **Scaffold + repair as an agent capability** | Schema → artifacts → compile/structure feedback → stop condition, measured in evals |
-| **Knowledge ↔ instruments ↔ factory** | Explicit seams with Nocciolo (durable context instruments recall against) and Maglio (factories that call these tools overnight) |
+| **Knowledge ↔ instruments ↔ factory** | Explicit seams with Orto (durable context instruments recall against) and Maglio (factories that call these tools overnight) |
 | **Local control, hard** | Core loop works without a cloud control plane |
 | **Craft artifacts as product** | Architecture notes and failure postmortems are deliverables, not leftover docs |
 
@@ -97,7 +97,7 @@ The MCP landscape already has strong remote servers (MCP Framework, FastMCP), ex
 
 5. **Progressive, craft-respecting path** — Remote server + Inspector first; evals next (so quality is measurable early); human surfaces (widget and/or AI SDK); then agentic scaffolding + repair loops. Traditional TypeScript architecture, tests, and reviews remain the baseline; agents amplify them. This avoids “prompt theater” and keeps the output reviewable.
 
-6. **Clear place in a larger agentic stack** — Sits between durable project knowledge (Nocciolo / company-brain config) and production factories (Maglio). Developers who already curate ADRs, standards, and domain docs can turn that knowledge into instruments agents inherit, then later wire those instruments into structured overnight loops—without rebuilding the wiring each time.
+6. **Clear place in a larger agentic stack** — Sits between durable project knowledge (Orto / company-brain config) and production factories (Maglio). Developers who already curate ADRs, standards, and domain docs can turn that knowledge into instruments agents inherit, then later wire those instruments into structured overnight loops—without rebuilding the wiring each time.
 
 7. **Portfolio- and contributor-ready artifacts** — Architecture notes, eval summaries, and failure postmortems are treated as product. For contractors and open-source contributors this turns the repo into both a working toolkit and a concrete demonstration of agentic engineering practice.
 
@@ -112,7 +112,7 @@ The MCP landscape already has strong remote servers (MCP Framework, FastMCP), ex
 
 **Why contribute here** instead of adjacent MCP projects: if you care about proving tools got better, keeping content primitives coherent across protocol and product surfaces, and building the instrument layer in a knowledge→instruments→factory stack, this is the repo that treats those as non-negotiable. If you want the fastest path to arbitrary tools + auto-registered React widgets, mcp-use and the official Apps kits already own that lane — we are not trying to out-run them there.
 
-What we deliberately do **not** chase for differentiation: pure boilerplate reduction, richest widget auto-discovery, multi-tenant auth perfection, plugin marketplaces, full CMS parity, or becoming “the” agent runtime / memory system (that is Nocciolo / Maglio territory).
+What we deliberately do **not** chase for differentiation: pure boilerplate reduction, richest widget auto-discovery, multi-tenant auth perfection, plugin marketplaces, full CMS parity, or becoming “the” agent runtime / memory system (that is Orto / Maglio territory).
 
 **Bottom line:** Other projects mostly help you *build an MCP server* (or widgets on top of one). Strumentario’s local-first content toolkit is designed to help you *own a durable, measurable instrument set*—the same tools agents and humans share—starting from schemas and progressing through remote protocol, evals, product surfaces, and scaffolding, while staying under your control and aligned with traditional engineering craft.
 
@@ -128,7 +128,7 @@ What we deliberately do **not** chase for differentiation: pure boilerplate redu
 | **Agent wiring** | Config snippets + skills / slash commands so Cursor, Claude Code, and peers can use the same instruments |
 | **Docs** | Architecture, landscape notes, eval results, failure postmortems — written for contributors and hiring screens |
 
-Later phases grow multi-schema support, event-driven updates, and tighter Nocciolo/Maglio integration.
+Later phases grow multi-schema support, event-driven updates, and tighter Orto/Maglio integration.
 
 ## Quick Start
 
@@ -301,7 +301,7 @@ None of this helps if an agent picks the wrong tool, for example a write when it
 - **High-signal content primitives** — query / mutate / validate / scaffold over a noisy miscellaneous catalog
 - **Traditional craft + agents** — clear TypeScript architecture, tests, and reviews remain the baseline; agentic scaffolding amplifies that craft
 - **Progressive** — start with a single remote server and Inspector; grow into MCP app widgets, AI SDK paths, and repair loops only when the foundation is solid
-- **Complement, don’t compete** — designed to sit next to Nocciolo (knowledge) and Maglio (factory); not a replacement for either
+- **Complement, don’t compete** — designed to sit next to Orto (knowledge) and Maglio (factory); not a replacement for either
 
 ## Status
 
@@ -313,17 +313,17 @@ pnpm typecheck
 pnpm test
 ```
 
-Guides: [CLI-first usage](docs/cli-guide.md), [several agents at once](docs/multi-agent.md), [how the stack fits together](docs/architecture/stack-seams.md). See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/nocciolo-brain-details.md](./docs/nocciolo-brain-details.md) for the Nocciolo / Hindsight project memory bank (`.nocciolo/`, MCP recall).
+Guides: [CLI-first usage](docs/cli-guide.md), [several agents at once](docs/multi-agent.md), [how the stack fits together](docs/architecture/stack-seams.md). See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/orto-brain-details.md](./docs/orto-brain-details.md) for the Orto / Hindsight project memory bank (`.orto/`, MCP recall).
 
-## Relationship to Nocciolo & Maglio
+## Relationship to Orto & Maglio
 
 | Layer        | Project       | Role                                              |
 |--------------|---------------|---------------------------------------------------|
-| Knowledge    | Nocciolo      | Durable company brain / memory bank config        |
+| Knowledge    | Orto      | Durable company brain / memory bank config        |
 | Instruments  | Strumentario  | MCP content toolkit — tools, surfaces, scaffolds  |
 | Production   | Maglio        | Factory scaffold and assembly-line config         |
 
-**Intended seams (even before deep integration):** Nocciolo seeds durable context that Strumentario instruments can recall and validate against; Maglio factories can call Strumentario tools overnight as part of production assembly. Use them together or independently — the stack story should stay coherent either way.
+**Intended seams (even before deep integration):** Orto seeds durable context that Strumentario instruments can recall and validate against; Maglio factories can call Strumentario tools overnight as part of production assembly. Use them together or independently — the stack story should stay coherent either way.
 
 ## Contributing
 
