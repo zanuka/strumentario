@@ -42,7 +42,7 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 | Capability | Official SDKs / stdio | mcp-use | MCP Framework / mcpkit-style | FastMCP | Official MCP Apps kits | Generation tools | **Strumentario** |
 |------------|----------------------|---------|------------------------------|---------|------------------------|------------------|------------------|
 | Remote multi-client (Streamable HTTP) | Rare / DIY | Strong | Strong | Strong | Secondary | Varies | **Primary (Phase 1)** |
-| MCP App widgets (major web frameworks) | None | **Excellent** (React auto-register) | Weak / none | None | **Core focus** (React) | Rare | Phase 3A (React first, then peers) |
+| MCP App widgets (major web frameworks) | None | **Excellent** (React auto-register) | Weak / none | None | **Core focus** (React) | Rare | Phase 3A (vanilla web component; framework adapters after) |
 | Zero-boilerplate tool definition | Low | Strong | Strong | Strong | N/A | High (generated) | Moderate (schema-driven) |
 | CLI scaffolder | None | Strong | Strong | Moderate | Moderate | Strong (one-shot) | Phase 4 |
 | AI SDK / product web path | None | Secondary | Weak | Weak | Weak | Rare | **Equal citizen (Phase 3B)** |
@@ -114,15 +114,15 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 
 Prefer **both**. A and B are equal citizens over the same schema-generated tool contracts — not “widget first, AI SDK if time.”
 
-- [ ] **A:** MCP app widgets (ChatGPT Apps / MCP Apps bridge) on the same tools — major web frameworks (React first, then Vue, Svelte, and peers)
+- [ ] **A:** MCP app widgets (ChatGPT Apps / MCP Apps bridge) on the same tools — major web frameworks (a framework-free custom element first, usable from React, Vue and Svelte; framework adapters and peers after) (in progress: `packages/widget` ships `<strumentario-page-widget>`, a vanilla web component — list, edit with live `validate`, dry-run preview, save — verified in a local harness, see [docs/widget](docs/widget/README.md); an MCP Apps host run and Vue and Svelte adapters (or just using the element from them) are still to do)
 - [ ] **B:** Small web UI using Vercel AI SDK or Anthropic/OpenAI that calls the same backend capabilities (in progress: `packages/ai-sdk` discovers the server's tools over MCP and runs a query, validate, mutate CLI example with `streamText`; the web UI is still to do)
-- [ ] Schema → widget prop schemas and AI SDK tool definitions stay in sync with server tools (document the generation path)
+- [ ] Schema → widget prop schemas and AI SDK tool definitions stay in sync with server tools (document the generation path) (widget prop types are generated from `toolContracts` with a drift test; the AI SDK path reads `tools/list` directly)
 - [ ] Demo GIF or short Loom in README; tools still work headless without the UI
 - [ ] Tag `v0.3.0` — “protocol + product UI + product code path”
 
 **Exit criteria:** a human can browse/edit via the widget *and* (ideally) the AI SDK path; identical tools remain callable from Cursor/Claude Code. If only one surface ships in the tag, the other is stubbed with shared contracts and a documented follow-up — not treated as optional forever.
 
-**Protect:** shipping a generic widget without the eval and content-primitive story already visible is the highest overlap risk with mcp-use. Phase 2 evidence must already be public. Framework coverage is a bet; React-only forever is not.
+**Protect:** shipping a generic widget without the eval and content-primitive story already visible is the highest overlap risk with mcp-use. Phase 2 evidence must already be public. Framework coverage is a bet; one framework forever is not.
 
 ---
 

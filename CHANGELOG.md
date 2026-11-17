@@ -5,6 +5,7 @@
 - `repair` tool (Phase 4): feeds `tsc` and schema-validation errors from scaffold output back into a bounded repair loop (default 3 rounds, early stop when the error count does not shrink) and returns the corrected files, rounds used, error counts per round and any remaining errors. Read-only annotations, so a read token may call it. The default path is deterministic; an optional model fixer sits behind `STRUMENTARIO_REPAIR_MODEL`.
 - Evals: six `repair` golden cases, the `repair_converged` scorer, and two agent tool-selection prompts for `repair`. Because `repair` is a new tool, the generated client and host config now include it.
 - `@strumentario/ai-sdk`: Vercel AI SDK product path. Connects to the server as an MCP client, exposes the tools it publishes to `streamText`, and ships a runnable query, validate, mutate (dry run by default) example. Optional provider keys; the server and CLI do not depend on it.
+- `@strumentario/widget`: MCP App widget as a vanilla web component (`<strumentario-page-widget>`, no framework dependency) over `query`, `validate` and `mutate` (list, edit with live validation, dry-run preview, save). Prop types and the editable field list are generated from the server's tool contracts with a drift test; the controller is framework-neutral and the element is a thin renderer over it. Exercised in a local harness (`pnpm --filter @strumentario/widget harness`), not yet in an MCP Apps host. See [docs/widget](docs/widget/README.md).
 
 ## v0.1.0 (upcoming; the maintainer tags after merge)
 
