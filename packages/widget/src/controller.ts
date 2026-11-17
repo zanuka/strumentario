@@ -12,7 +12,7 @@ import {
 
 /**
  * The widget's behaviour with no framework in it. Every read and write is an MCP tool call
- * (query, validate, mutate) through a `ToolCaller`; a React, Vue or Svelte layer only renders
+ * (query, validate, mutate) through a `ToolCaller`; a web component, React, Vue or Svelte layer only renders
  * `getState()` and forwards user actions. There is no second API: this is the contract the CLI,
  * the evals and the AI SDK path call too.
  */

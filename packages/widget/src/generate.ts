@@ -2,7 +2,7 @@ import type { ToolContract } from "@strumentario/server";
 
 /**
  * Generates the widget's prop and call types from the server's framework-neutral tool contracts
- * (`toolContracts`, plain JSON Schema). Nothing here knows React, and nothing restates a schema by
+ * (`toolContracts`, plain JSON Schema). Nothing here knows any UI framework, and nothing restates a schema by
  * hand: change a field in `schema.ts`, run `pnpm --filter @strumentario/widget generate`, and the
  * types follow. `generated.test.ts` fails when the checked-in file no longer matches.
  */

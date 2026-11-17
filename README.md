@@ -105,7 +105,7 @@ The MCP landscape already has strong remote servers (MCP Framework, FastMCP), ex
 
 - Faster path from “I need tools for this domain” to a remote, multi-client MCP surface that agents can already call
 - Less repeated boilerplate around query/mutate/validate and surface wiring
-- Same tools usable by Cursor/Claude Code *and* by a React widget or AI SDK UI without drift
+- Same tools usable by Cursor/Claude Code *and* by a widget or AI SDK UI without drift
 - Confidence that tool and scaffold changes are measurable (via golden traces and scorers)
 - Ownership stays local; no requirement to adopt a hosted control plane for the core instruments
 - A clear growth path toward repair loops and tighter knowledge/factory integration without rewriting the foundation
@@ -219,9 +219,9 @@ In code: `const client = await connectMcpClient({ url }); const tools = await lo
 
 Unit tests (`pnpm test`) need no secrets or network: they run a mock model against the in-process server and against a local HTTP server. Whether a model *chooses* these tools well is the Phase 2 question, measured by the tool-selection eval; its summary is [docs/evals/2026-11-10-agent-tool-selection.md](docs/evals/2026-11-10-agent-tool-selection.md) (a live model run is still pending, so it reports no numbers yet).
 
-### React widget
+### Web component widget
 
-`packages/widget` is the MCP App widget surface (React first). It lists pages (`query`), edits with live `validate` feedback, and saves through `mutate` after a dry-run preview. It calls the same tools as the CLI and the AI SDK path; its prop types are generated from the server's tool contracts, and a drift test fails when they go stale. The controller is framework-neutral and the React layer is thin, so Vue and Svelte adapters (issue #20) plug into the same contracts.
+`packages/widget` is the MCP App widget surface, a vanilla web component (`<strumentario-page-widget>`, shadow DOM, no framework dependency). It lists pages (`query`), edits with live `validate` feedback, and saves through `mutate` after a dry-run preview. It calls the same tools as the CLI and the AI SDK path; its prop types are generated from the server's tool contracts, and a drift test fails when they go stale. The controller is framework-neutral and the element is a thin renderer over it, so it can be used as is from React, Vue or Svelte, and framework adapters (issue #20) can plug into the same contracts.
 
 ![Widget demo: list, edit, live validate error, dry-run preview, save](docs/widget/demo.gif)
 

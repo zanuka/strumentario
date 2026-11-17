@@ -6,10 +6,9 @@
     "composite": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test-support.ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "src/test-support.ts"],
   "references": [{ "path": "../server" }]
 }

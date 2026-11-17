@@ -8,7 +8,7 @@ Thanks for your interest. Strumentario is in the earliest public stage; the high
 2. **Try the Phase 1 server** once it lands and report what broke in your agent host.
 3. **Small, focused PRs** once the foundation is tagged:
    - Additional tools or scorers
-   - Improvements to the React MCP widget or AI SDK path
+   - Improvements to the web component MCP widget or AI SDK path
    - Docs, architecture notes, or failure postmortems
    - Scaffold recipes for common schemas
 

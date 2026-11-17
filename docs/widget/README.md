@@ -1,6 +1,6 @@
-# React MCP App widget
+# Web component MCP App widget
 
-`packages/widget` is the first human surface of Phase 3A: a React widget that lists pages, edits them with live validation, and saves through a dry-run preview. It is a view over the same MCP tools the CLI, the evals and the [AI SDK path](../../README.md#ai-sdk-path) call. There is no private API.
+`packages/widget` is the first human surface of Phase 3A: a vanilla web component (`<strumentario-page-widget>`, shadow DOM, no framework dependency) that lists pages, edits them with live validation, and saves through a dry-run preview. It is a view over the same MCP tools the CLI, the evals and the [AI SDK path](../../README.md#ai-sdk-path) call. There is no private API.
 
 ![Widget demo: list, edit, live validate error, dry-run preview, save](demo.gif)
 
@@ -32,12 +32,12 @@ src/generated/contracts.ts   StoredPage, PageDraft, PAGE_FIELDS, KEY_FIELD,
 src/controller.ts            framework-neutral state machine over a ToolCaller
         │  subscribe / getState / actions
         ▼
-src/react/                   useSyncExternalStore hook + PageWidget (render only)
+src/element.ts               <strumentario-page-widget> custom element (render only)
 ```
 
 - **Prop types are generated, not copied.** `generate.ts` turns the server's `toolContracts` into TypeScript types and the editable field list. The editor renders its inputs from `PAGE_FIELDS`, so a field added in `packages/server/src/schema.ts` appears in the widget after regenerating. `generated.test.ts` fails when the checked-in file differs from what the contracts generate, when the widget's tools are not published over `tools/list`, or when the field list no longer matches the server's stored page.
-- **The controller has no framework in it.** It takes a `ToolCaller` (`mcpToolCaller(client)` adapts any MCP client or host bridge with `callTool`) and exposes `getState()` and `subscribe()`. The React layer renders that state and forwards events; a Vue or Svelte adapter (issue #20) needs only the same two functions.
-- **Presentation hints are not schema.** Which fields use a text area (`multilineFields`, default `["body"]`) is a prop of the React component.
+- **The controller has no framework in it.** It takes a `ToolCaller` (`mcpToolCaller(client)` adapts any MCP client or host bridge with `callTool`) and exposes `getState()` and `subscribe()`. The element renders that state and forwards events. A custom element works as is inside Vue, Svelte or React; if a framework wants its own component, an adapter (issue #20) needs only the same two functions.
+- **Presentation hints are not schema.** Which fields use a text area (`multilineFields`, default `["body"]`) is the element's `multiline-fields` attribute (comma-separated). `validate-delay-ms` sets the debounce.
 
 ## Run it
 
@@ -50,10 +50,11 @@ The harness serves the bundled widget and the Strumentario MCP endpoint from one
 
 To use the widget elsewhere:
 
-```tsx
+```ts
 const client = new Client({ name: "my-host", version: "1.0.0" });
 await client.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:3001/mcp")));
-<PageWidget caller={mcpToolCaller(client)} />
+defineStrumentarioPageWidget();                       // registers <strumentario-page-widget>
+document.querySelector("strumentario-page-widget").caller = mcpToolCaller(client);
 ```
 
 If the server has bearer tokens set, pass them in the transport's `requestInit` headers; a read token can list and validate but its `mutate` calls are refused, and the widget shows the server's message.
@@ -74,11 +75,11 @@ node packages/cli/dist/main.js call query --input '{"slug":"getting-started"}' -
 
 - `generated.test.ts`: the drift test described above, a domain with an extra field, a missing-contract error.
 - `controller.test.ts`: list and filter; validate errors, debounce and stale answers; the preview-before-save rule; create; conflict; one idempotency key per draft.
-- `react.test.tsx`: the whole flow through the rendered components (jsdom) against a real server.
+- `element.test.ts`: the whole flow through the rendered element (jsdom) against a real server, and a check that typing keeps the same input element, focus and caret while live validation re-renders.
 - `headless.test.ts`: widget and CLI on one server.
 
 ## What is and is not verified
 
-- Verified: the flow above, in the unit tests and by hand in a browser against the local harness (2026-11-15), which produced the GIF. The GIF is five frames of that one session, not a screen recording of continuous interaction.
+- Verified: the flow above, in the unit tests and by hand in a browser against the local harness (re-checked after the move from React to the web component), which produced the GIF. The GIF is five screenshots from one manual session, not a screen recording of continuous interaction.
 - **Not verified:** an MCP Apps host (ChatGPT Apps or another host that renders `ui://` resources). The harness has no `ui://` resource and no postMessage bridge, so the widget has not run inside a host's iframe. The MCP Inspector lists tools but does not render widgets. A host integration is still to do.
 - **No eval for the widget.** It adds no tool and changes no tool shape, so the golden cases and scorers are unchanged. The evidence that these tools behave is the Phase 2 work: the [baseline scorer run](../evals/2026-11-08-baseline.md) and the [agent tool-selection eval](../evals/2026-11-10-agent-tool-selection.md) (a live model run is still pending, so neither reports a Braintrust score).
