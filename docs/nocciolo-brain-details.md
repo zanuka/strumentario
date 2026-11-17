@@ -122,11 +122,28 @@ Verify connectivity: refresh MCP in Cursor Settings after writing `.cursor/mcp.j
 
 ## What gets seeded (and what does not)
 
-**In scope for this bank (current sources):**
+**In scope for this bank (current sources):** the allowlist in `.nocciolo/config.json` (`store.allowlist`) is the seed list. It currently holds:
 
-- `README.md` — vision, principles, differentiation, relationship to Nocciolo/Maglio
-- `AGENTS.md` — agent-facing project rules
+- `README.md`, `AGENTS.md` — vision, principles, differentiation, agent-facing rules
+- `ROADMAP.md`, `CHANGELOG.md` — phase gates, status and release notes
 - `docs/braintrust-eval-details.md` — eval architecture and local-first/secrets stance
+- `docs/evals/*.md` — checked-in experiment summaries
+- `docs/use-cases.md`, `docs/architecture/*.md` — use cases, schema generation, Nocciolo/Maglio seams
+- `docs/cli-guide.md`, `docs/multi-agent.md`, `docs/batch.md`, `docs/journal.md`, `docs/server-transport-and-soak.md` — CLI, multi-agent, batch, journal and transport behavior
+- `docs/widget/README.md` — the web component widget surface
+- `docs/nocciolo-brain-details.md` — this file
+
+When you add a living doc, add its path to `store.allowlist` in the same change, then re-seed.
+
+### Re-seeding
+
+```bash
+nocciolo seed --dry-run                      # preview which sources changed
+NOCCIOLO_HINDSIGHT_API_KEY='…' nocciolo seed # retain changed or new sources only
+nocciolo seed --force                        # re-retain everything, e.g. after an interrupted run
+```
+
+Seeding is incremental (see `local/seed-manifest.json` above), so newly allowlisted files are picked up and unchanged ones are skipped.
 
 **Out of scope by design:**
 

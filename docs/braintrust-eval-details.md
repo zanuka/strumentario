@@ -2,11 +2,11 @@
 
 Strumentario treats evals as product, not afterthought. Braintrust is the Phase 2 measurement layer: golden datasets, scored experiments, and public write-ups that answer whether a tool or scaffold change actually improved quality.
 
-This document is the high-level strategy. Concrete suite layout, run commands, and experiment summaries land with Phase 2 implementation (see [ROADMAP.md](../ROADMAP.md) Phase 2).
+This document is the eval strategy and design rationale. The suite layout and run commands are in [`packages/evals/README.md`](../packages/evals/README.md), and checked-in experiment summaries are under [`docs/evals/`](evals/) (see [ROADMAP.md](../ROADMAP.md) Phase 2).
 
 ![Evals as product — Phase 2 gate](../images/strumentario-evals-diagram.png)
 
-*Golden cases → measurable tool & scaffold quality. See [braintrust-eval-details.md](braintrust-eval-details.md).*
+*Golden cases → measurable tool & scaffold quality.*
 
 ## Why Braintrust
 
