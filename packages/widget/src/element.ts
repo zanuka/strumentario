@@ -13,6 +13,8 @@ import { KEY_FIELD, PAGE_FIELDS, TOOL_META, type PageDraft } from "./generated/c
 
 export const ELEMENT_NAME = "strumentario-page-widget";
 
+export type { StrumentarioPageWidgetProps } from "./element-props.js";
+
 const STYLE = `
   :host { display: block; font: 15px/1.45 system-ui, sans-serif; color: #1b1f24; }
   .root { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
@@ -89,8 +91,21 @@ export class StrumentarioPageWidget extends HTMLElement {
   }
 
   connectedCallback(): void {
+    this.#adoptEarlyCaller();
     this.#readAttributes();
     this.#start();
+  }
+
+  /**
+   * A framework may set `caller` on the bare tag before this class is registered (a client-only
+   * dynamic import, a lazy `defineStrumentarioPageWidget()`). That creates an own data property that
+   * shadows the accessor once the element upgrades, so move the value onto the accessor.
+   */
+  #adoptEarlyCaller(): void {
+    if (!Object.prototype.hasOwnProperty.call(this, "caller")) return;
+    const early = Reflect.get(this, "caller") as ToolCaller | undefined;
+    Reflect.deleteProperty(this, "caller");
+    this.#caller = early;
   }
 
   disconnectedCallback(): void {

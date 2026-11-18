@@ -42,7 +42,7 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 | Capability | Official SDKs / stdio | mcp-use | MCP Framework / mcpkit-style | FastMCP | Official MCP Apps kits | Generation tools | **Strumentario** |
 |------------|----------------------|---------|------------------------------|---------|------------------------|------------------|------------------|
 | Remote multi-client (Streamable HTTP) | Rare / DIY | Strong | Strong | Strong | Secondary | Varies | **Primary (Phase 1)** |
-| MCP App widgets (major web frameworks) | None | **Excellent** (React auto-register) | Weak / none | None | **Core focus** (React) | Rare | Phase 3A (vanilla web component; framework adapters after) |
+| MCP App widgets (major web frameworks) | None | **Excellent** (React auto-register) | Weak / none | None | **Core focus** (React) | Rare | Phase 3A (vanilla web component; used from Vue and Svelte fixtures, other frameworks via a documented checklist) |
 | Zero-boilerplate tool definition | Low | Strong | Strong | Strong | N/A | High (generated) | Moderate (schema-driven) |
 | CLI scaffolder | None | Strong | Strong | Moderate | Moderate | Strong (one-shot) | Phase 4 |
 | AI SDK / product web path | None | Secondary | Weak | Weak | Weak | Rare | **Equal citizen (Phase 3B)** |
@@ -114,7 +114,7 @@ Common outcome without a content-toolkit layer: developers still rebuild query /
 
 Prefer **both**. A and B are equal citizens over the same schema-generated tool contracts — not “widget first, AI SDK if time.”
 
-- [ ] **A:** MCP app widgets (ChatGPT Apps / MCP Apps bridge) on the same tools — major web frameworks (a framework-free custom element first, usable from React, Vue and Svelte; framework adapters and peers after) (in progress: `packages/widget` ships `<strumentario-page-widget>`, a vanilla web component — list, edit with live `validate`, dry-run preview, save — verified in a local harness, see [docs/widget](docs/widget/README.md); an MCP Apps host run and Vue and Svelte adapters (or just using the element from them) are still to do)
+- [ ] **A:** MCP app widgets (ChatGPT Apps / MCP Apps bridge) on the same tools — major web frameworks (a framework-free custom element used as is from Vue, Svelte, React 19 and plain HTML; peers after) (in progress: `packages/widget` ships `<strumentario-page-widget>`, a vanilla web component — list, edit with live `validate`, dry-run preview, save — verified in a local harness, see [docs/widget](docs/widget/README.md); the shared behavior suite passes with the element mounted from Vue and Svelte fixtures with shipped type declarations, see [Use the widget from a framework](docs/widget/frameworks.md); an MCP Apps host run, Nuxt and SvelteKit apps and further frameworks are still to do)
 - [ ] **B:** Small web UI using Vercel AI SDK or Anthropic/OpenAI that calls the same backend capabilities (in progress: `packages/ai-sdk` discovers the server's tools over MCP and runs a query, validate, mutate CLI example with `streamText`; the web UI is still to do)
 - [ ] Schema → widget prop schemas and AI SDK tool definitions stay in sync with server tools (document the generation path) (widget prop types are generated from `toolContracts` with a drift test; the AI SDK path reads `tools/list` directly)
 - [x] Demo GIF or short Loom in README; tools still work headless without the UI (widget demo GIF in the README and [docs/widget](docs/widget/README.md), recorded from the local harness; the CLI, evals and AI SDK path call the same tools headless)

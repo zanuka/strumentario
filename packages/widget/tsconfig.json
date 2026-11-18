@@ -9,6 +9,6 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts", "src/test-support.ts"],
+  "exclude": ["src/**/*.test.ts", "src/test-support.ts", "src/widget-behavior.ts"],
   "references": [{ "path": "../server" }]
 }

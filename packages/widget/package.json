@@ -12,19 +12,27 @@
     "./element": {
       "types": "./dist/element.d.ts",
       "import": "./dist/element.js"
+    },
+    "./vue": {
+      "types": "./types/vue.d.ts"
+    },
+    "./svelte": {
+      "types": "./types/svelte.d.ts"
     }
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "types"
   ],
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
     "generate": "pnpm --filter @strumentario/server run build && pnpm run build && node dist/generate-cli.js",
     "generate:check": "pnpm --filter @strumentario/server run build && pnpm run build && node dist/generate-cli.js --check",
-    "harness": "pnpm --filter @strumentario/server run build && pnpm run build && node dist/harness/serve.js"
+    "harness": "pnpm --filter @strumentario/server run build && pnpm run build && node dist/harness/serve.js",
+    "typecheck:fixtures": "vue-tsc --noEmit -p fixtures/vue-app/tsconfig.json && svelte-check --tsconfig fixtures/svelte-app/tsconfig.json --fail-on-warnings"
   },
   "engines": {
     "node": ">=20"
@@ -35,7 +43,12 @@
   "devDependencies": {
     "@strumentario/cli": "workspace:*",
     "@strumentario/server": "workspace:*",
+    "@vue/test-utils": "^2.6.0",
     "esbuild": "^0.28.0",
-    "jsdom": "^26.1.0"
+    "jsdom": "^26.1.0",
+    "svelte": "^5.57.3",
+    "svelte-check": "^4.7.8",
+    "vue": "^3.5.45",
+    "vue-tsc": "^3.3.14"
   }
 }
