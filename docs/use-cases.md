@@ -4,7 +4,7 @@ Strumentario is for teams that need a **durable, measurable content instrument s
 
 Audience spans **solo developers**, **product / platform teams**, and **companies** already running agents in Cursor, Claude Code, ChatGPT Apps, or overnight factory jobs. Each scenario maps to the [differentiation bets](../README.md#differentiation-bets) and suggests a **demo shape** you can later turn into a Loom, Inspector walkthrough, or Braintrust experiment summary.
 
-Related: [Braintrust eval strategy](./braintrust-eval-details.md) · [Nocciolo / Hindsight bank](./nocciolo-brain-details.md) · [ROADMAP](../ROADMAP.md)
+Related: [Braintrust eval strategy](./braintrust-eval-details.md) · [Orto / Hindsight bank](./orto-brain-details.md) · [ROADMAP](../ROADMAP.md)
 
 ---
 
@@ -14,7 +14,7 @@ Related: [Braintrust eval strategy](./braintrust-eval-details.md) · [Nocciolo /
 |----------|--------------|---------------------------|
 | **Solo developer / contractor** | Stdio hello-world never becomes a remote multi-client surface; no proof the tools got better; portfolio reads as “I wired MCP” | Schema → remote server + eval summary + architecture note as craft artifacts |
 | **Product / content team** | Agents and humans drift: Cursor tools ≠ widget behavior ≠ product AI SDK path; every domain reimplements query/mutate/validate | One schema → shared primitives across hosts and UIs |
-| **Platform / company** | Knowledge lives in docs; instruments are throwaway; overnight jobs reinvent wiring; cloud control planes conflict with ownership | Local-first instruments between knowledge (Nocciolo) and factories (Maglio), with golden traces in CI |
+| **Platform / company** | Knowledge lives in docs; instruments are throwaway; overnight jobs reinvent wiring; cloud control planes conflict with ownership | Local-first instruments between knowledge (Orto) and factories (Maglio), with golden traces in CI |
 
 ---
 
@@ -112,18 +112,18 @@ Related: [Braintrust eval strategy](./braintrust-eval-details.md) · [Nocciolo /
 
 ### 6. Company knowledge → instruments → overnight factory
 
-**Who:** Company with ADRs, standards, and domain docs already curated (or moving onto Nocciolo), and production assembly jobs (or Maglio factories) that should call real tools overnight.
+**Who:** Company with ADRs, standards, and domain docs already curated (or moving onto Orto), and production assembly jobs (or Maglio factories) that should call real tools overnight.
 
 **Today:** Memory/runtime projects and factory scaffolds don’t own the MCP content instrument layer. Teams rebuild wiring each time. Agents rediscover conventions every session; batch jobs call brittle scripts instead of stable tools.
 
-**With Strumentario:** Explicit seams—**Nocciolo** seeds durable context instruments can recall/validate against; **Strumentario** owns the measurable MCP instruments; **Maglio** factories call those tools in structured loops. Use together or independently; boundaries stay clear (Strumentario is not the memory system or the factory).
+**With Strumentario:** Explicit seams—**Orto** seeds durable context instruments can recall/validate against; **Strumentario** owns the measurable MCP instruments; **Maglio** factories call those tools in structured loops. Use together or independently; boundaries stay clear (Strumentario is not the memory system or the factory).
 
 **Bets shown:** Knowledge ↔ instruments ↔ factory · Local control · Complement, don’t compete
 
 **Demo sketch:**
 
-1. Architecture diagram: Nocciolo bank → Strumentario tools → Maglio overnight step.
-2. Agent recalls project standards (Nocciolo/Hindsight), then **validate**s a content mutation against schema-backed instruments.
+1. Architecture diagram: Orto bank → Strumentario tools → Maglio overnight step.
+2. Agent recalls project standards (Orto/Hindsight), then **validate**s a content mutation against schema-backed instruments.
 3. Factory job invokes the same mutate/validate tools headless—no widget required.
 
 ---
@@ -152,7 +152,7 @@ Related: [Braintrust eval strategy](./braintrust-eval-details.md) · [Nocciolo /
 
 **Today:** Repos show “I connected MCP.” Little on regressions caught, landscape honesty, or failure analysis.
 
-**With Strumentario:** Architecture notes, experiment summaries, and failure postmortems are **product**. A reviewer can say: remote content primitives, measurable tool changes, multi-surface coherence, clear Nocciolo/Maglio seams.
+**With Strumentario:** Architecture notes, experiment summaries, and failure postmortems are **product**. A reviewer can say: remote content primitives, measurable tool changes, multi-surface coherence, clear Orto/Maglio seams.
 
 **Bets shown:** Craft artifacts as product · Landscape honesty
 
@@ -217,11 +217,11 @@ Aligned with roadmap phase gates—**do not** lead with a generic widget if Phas
 
 **Primary bets:** Scaffold + repair · Knowledge ↔ instruments ↔ factory
 
-### Demo D — Stack seams (Nocciolo → Strumentario → Maglio)
+### Demo D — Stack seams (Orto → Strumentario → Maglio)
 
 **Story:** “Memory, instruments, and factories are complementary layers.”
 
-1. Seed/recall durable standards via Nocciolo/Hindsight (as this repo already does for agents).
+1. Seed/recall durable standards via Orto/Hindsight (as this repo already does for agents).
 2. Strumentario validate/mutate against schema-backed content.
 3. Document (or stub) a Maglio factory step that calls the same MCP tools headless.
 
@@ -238,7 +238,7 @@ Be honest in demos and sales conversations:
 | Fastest arbitrary tools + React widget auto-registration | mcp-use / official MCP Apps kits |
 | Decorator elegance / Python tool servers | FastMCP / mcpkit-style frameworks |
 | One-shot generate server from OpenAPI / NL | Generation tools (e.g. mcp-anything) |
-| Durable memory / company brain | Nocciolo |
+| Durable memory / company brain | Orto |
 | Overnight factory / assembly-line config | Maglio |
 
 Strumentario wins when the job is **owning measurable content instruments** shared by agents and humans—from schema through evals, surfaces, and repair—under local control.

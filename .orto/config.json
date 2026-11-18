@@ -13,10 +13,21 @@
     "allowlist": [
       "AGENTS.md",
       "README.md",
+      "ROADMAP.md",
+      "CHANGELOG.md",
+      "docs/architecture/schema-generation.md",
+      "docs/architecture/stack-seams.md",
+      "docs/batch.md",
       "docs/braintrust-eval-details.md",
-      "docs/nocciolo-brain-details.md",
+      "docs/cli-guide.md",
+      "docs/evals/2026-11-08-baseline.md",
+      "docs/evals/2026-11-10-agent-tool-selection.md",
+      "docs/journal.md",
+      "docs/multi-agent.md",
+      "docs/orto-brain-details.md",
       "docs/server-transport-and-soak.md",
-      "docs/use-cases.md"
+      "docs/use-cases.md",
+      "docs/widget/README.md"
     ]
   }
 }
