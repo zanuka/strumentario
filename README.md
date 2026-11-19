@@ -221,7 +221,7 @@ Unit tests (`pnpm test`) need no secrets or network: they run a mock model again
 
 ### Web component widget
 
-`packages/widget` is the MCP App widget surface, a vanilla web component (`<strumentario-page-widget>`, shadow DOM, no framework dependency). It lists pages (`query`), edits with live `validate` feedback, and saves through `mutate` after a dry-run preview. It calls the same tools as the CLI and the AI SDK path; its prop types are generated from the server's tool contracts, and a drift test fails when they go stale. The controller is framework-neutral and the element is a thin renderer over it, so it can be used as is from React, Vue or Svelte, and framework adapters (issue #20) can plug into the same contracts.
+`packages/widget` is the MCP App widget surface, a vanilla web component (`<strumentario-page-widget>`, shadow DOM, no framework dependency). It lists pages (`query`), edits with live `validate` feedback, and saves through `mutate` after a dry-run preview. It calls the same tools as the CLI and the AI SDK path; its prop types are generated from the server's tool contracts, and a drift test fails when they go stale. The controller is framework-neutral and the element is a thin renderer over it, so it is used as is from Vue and Svelte (the same behavior suite passes with the element mounted from each, with shipped type declarations) and from React 19 or plain HTML; there are no per-framework widget copies. See [Use the widget from a framework](docs/widget/frameworks.md).
 
 ![Widget demo: list, edit, live validate error, dry-run preview, save](docs/widget/demo.gif)
 

@@ -36,7 +36,7 @@ src/element.ts               <strumentario-page-widget> custom element (render o
 ```
 
 - **Prop types are generated, not copied.** `generate.ts` turns the server's `toolContracts` into TypeScript types and the editable field list. The editor renders its inputs from `PAGE_FIELDS`, so a field added in `packages/server/src/schema.ts` appears in the widget after regenerating. `generated.test.ts` fails when the checked-in file differs from what the contracts generate, when the widget's tools are not published over `tools/list`, or when the field list no longer matches the server's stored page.
-- **The controller has no framework in it.** It takes a `ToolCaller` (`mcpToolCaller(client)` adapts any MCP client or host bridge with `callTool`) and exposes `getState()` and `subscribe()`. The element renders that state and forwards events. A custom element works as is inside Vue, Svelte or React; if a framework wants its own component, an adapter (issue #20) needs only the same two functions.
+- **The controller has no framework in it.** It takes a `ToolCaller` (`mcpToolCaller(client)` adapts any MCP client or host bridge with `callTool`) and exposes `getState()` and `subscribe()`. The element renders that state and forwards events. A custom element works as is inside Vue, Svelte, React 19 or plain HTML, so there are no per-framework widgets: see [Use the widget from a framework](frameworks.md). A native wrapper component (for example with Vue events and slots) would be a thin shell around the same element and is not built.
 - **Presentation hints are not schema.** Which fields use a text area (`multilineFields`, default `["body"]`) is the element's `multiline-fields` attribute (comma-separated). `validate-delay-ms` sets the debounce.
 
 ## Run it
@@ -75,11 +75,14 @@ node packages/cli/dist/main.js call query --input '{"slug":"getting-started"}' -
 
 - `generated.test.ts`: the drift test described above, a domain with an extra field, a missing-contract error.
 - `controller.test.ts`: list and filter; validate errors, debounce and stale answers; the preview-before-save rule; create; conflict; one idempotency key per draft.
-- `element.test.ts`: the whole flow through the rendered element (jsdom) against a real server, and a check that typing keeps the same input element, focus and caret while live validation re-renders.
+- `element.test.ts`: the plain-DOM host of the shared suite: the whole flow through the rendered element (jsdom) against a real server, a check that typing keeps the same input element, focus and caret while live validation re-renders, editor fields from the contract, conflict with "Reload latest", and a failed list.
+- `widget-behavior.ts`: the shared behavior suite behind `element.test.ts` and the two fixtures below. It is not a test file; each host calls it with its own way of mounting the element.
+- `fixtures/vue-app` and `fixtures/svelte-app` (test fixtures, not published): the same suite with the element rendered by Vue and by Svelte, plus property passing, late registration (client-only) and, for Vue, server rendering. `pnpm typecheck` also type-checks both fixtures. See [frameworks.md](frameworks.md).
 - `headless.test.ts`: widget and CLI on one server.
 
 ## What is and is not verified
 
 - Verified: the flow above, in the unit tests and by hand in a browser against the local harness (re-checked after the move from React to the web component), which produced the GIF. The GIF is five screenshots from one manual session, not a screen recording of continuous interaction.
+- Vue and Svelte: the same behavior suite passes with the element mounted from a Vue 3 and a Svelte 5 fixture under jsdom. **Not verified:** Nuxt, SvelteKit, React, and real browsers for the framework fixtures. See [frameworks.md](frameworks.md#what-is-verified).
 - **Not verified:** an MCP Apps host (ChatGPT Apps or another host that renders `ui://` resources). The harness has no `ui://` resource and no postMessage bridge, so the widget has not run inside a host's iframe. The MCP Inspector lists tools but does not render widgets. A host integration is still to do.
 - **No eval for the widget.** It adds no tool and changes no tool shape, so the golden cases and scorers are unchanged. The evidence that these tools behave is the Phase 2 work: the [baseline scorer run](../evals/2026-11-08-baseline.md) and the [agent tool-selection eval](../evals/2026-11-10-agent-tool-selection.md) (a live model run is still pending, so neither reports a Braintrust score).

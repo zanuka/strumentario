@@ -30,4 +30,4 @@ export {
   type WidgetToolName,
 } from "./generated/contracts.js";
 export { generateContractsSource, GENERATED_PATH, schemaToType, WIDGET_TOOL_NAMES } from "./generate.js";
-export { defineStrumentarioPageWidget, ELEMENT_NAME, StrumentarioPageWidget } from "./element.js";
+export { defineStrumentarioPageWidget, ELEMENT_NAME, StrumentarioPageWidget, type StrumentarioPageWidgetProps } from "./element.js";
