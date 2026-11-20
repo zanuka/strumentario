@@ -287,7 +287,7 @@ What the tools give you over raw file edits:
 - **Access has two levels.** `MCP_READ_TOKEN` may call `query` and `validate` only; `MCP_WRITE_TOKEN` may call everything.
 - **One contract everywhere.** Every host, the [CLI](docs/cli-guide.md) (including [`batch`](docs/batch.md)) and headless factories such as Maglio call the same tools.
 
-Plain agent editing is enough for one person, one agent and occasional edits. Put Strumentario in front when several agents write to the same content, when runs are unattended, or when content has to stay valid and traceable. The [multi-agent guide](docs/multi-agent.md) walks through two agents racing on one page.
+Plain agent editing is enough for one person, one agent and occasional edits. Put Strumentario in front when several agents write to the same content, when runs are unattended, or when content has to stay valid and traceable. The [multi-agent guide](docs/multi-agent.md) walks through two agents racing on one page. [Why Strumentario is helpful](docs/why-strumentario.md) puts the same idea next to a host that can already recall from a Hindsight bank.
 
 ### Why there is a tool-selection eval
 
@@ -313,7 +313,7 @@ pnpm typecheck
 pnpm test
 ```
 
-Guides: [CLI-first usage](docs/cli-guide.md), [several agents at once](docs/multi-agent.md), [how the stack fits together](docs/architecture/stack-seams.md). See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/orto-brain-details.md](./docs/orto-brain-details.md) for the Orto / Hindsight project memory bank (`.orto/`, MCP recall).
+Guides: [CLI-first usage](docs/cli-guide.md), [several agents at once](docs/multi-agent.md), [how the stack fits together](docs/architecture/stack-seams.md), [why Strumentario is helpful](docs/why-strumentario.md). See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/orto-brain-details.md](./docs/orto-brain-details.md) for the Orto / Hindsight project memory bank (`.orto/`, MCP recall).
 
 ## Relationship to Orto & Maglio
 

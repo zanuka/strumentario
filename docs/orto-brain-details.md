@@ -129,6 +129,7 @@ Verify connectivity: refresh MCP in Cursor Settings after writing `.cursor/mcp.j
 - `docs/braintrust-eval-details.md` — eval architecture and local-first/secrets stance
 - `docs/evals/*.md` — checked-in experiment summaries
 - `docs/use-cases.md`, `docs/architecture/*.md` — use cases, schema generation, Orto/Maglio seams
+- `docs/why-strumentario.md`: why a Hindsight-connected host still wants a shared write procedure
 - `docs/cli-guide.md`, `docs/multi-agent.md`, `docs/batch.md`, `docs/journal.md`, `docs/server-transport-and-soak.md` — CLI, multi-agent, batch, journal and transport behavior
 - `docs/widget/README.md` — the web component widget surface
 - `docs/orto-brain-details.md` — this file
