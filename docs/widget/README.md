@@ -66,7 +66,7 @@ The same tools work with no UI. `src/headless.test.ts` starts the HTTP server, l
 ```bash
 pnpm --filter @strumentario/server serve
 pnpm --filter @strumentario/cli build
-node packages/cli/dist/main.js call query --input '{"slug":"getting-started"}' --json
+node packages/cli/dist/main.js call query --input '{}' --json
 ```
 
 ## Tests
