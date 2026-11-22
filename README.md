@@ -146,7 +146,7 @@ This starts the local Streamable HTTP MCP endpoint at `http://localhost:3001/mcp
 - `MCP_TRANSPORT` — `http` (default) or `stdio`. Streamable HTTP stays the primary path; stdio is the same server and tools for hosts that spawn it as a child process, with no port. Equivalent to the `--stdio` flag.
 - `STRUMENTARIO_AGENT` — stdio only: the agent name recorded for calls (there are no headers over stdio).
 
-To use stdio, point the host at `node /abs/path/to/packages/server/dist/serve.js --stdio` (after `pnpm build`) with `STRUMENTARIO_DATA_DIR` set; many such processes can share one data directory. stdout carries only protocol messages. See [docs/server-transport-and-soak.md](docs/server-transport-and-soak.md#stdio-transport) for a host config.
+To use stdio, point the host at `scripts/mcp-stdio.mjs` (or `node packages/server/dist/serve.js --stdio`) after `pnpm build`, with `STRUMENTARIO_DATA_DIR` set; many such processes can share one data directory. stdout carries only protocol messages. Claude Code, Cursor and Codex already do this for this repo, see [Connect an agent host](#connect-an-agent-host) and [docs/server-transport-and-soak.md](docs/server-transport-and-soak.md#stdio-transport).
 
 `GET /healthz` returns `200` for liveness checks. Send an optional `X-Strumentario-Agent` header to identify the calling agent. See [docs/server-transport-and-soak.md](docs/server-transport-and-soak.md) for the stateless-transport decision and soak results.
 
@@ -170,23 +170,45 @@ Prompt: `review-draft` (validate before any mutate).
 
 ### Connect an agent host
 
-Start the server first (`pnpm --filter @strumentario/server serve`, default `http://localhost:3001/mcp`). Each snippet below was run against that server; the `X-Strumentario-Agent` header is optional and shows up in the [change journal](docs/journal.md) so you can tell hosts apart.
+**Which one to use.** Working in this repo from Claude Code, Cursor or Codex: use **stdio**. The repo already registers a `strumentario` server for each host, so there is no process to start. Several agents sharing one server (or an agent outside this repo): use **HTTP**, below.
 
-**Claude Code** (project-scoped, written to `.mcp.json`; use `--scope user` to make it global):
+#### stdio: open the repo in Claude Code, Cursor or Codex
+
+Run `pnpm install && pnpm build` once. Each host then spawns `scripts/mcp-stdio.mjs`, which serves the same five tools over stdio against `.strumentario/data` and records the host in the [change journal](docs/journal.md) (`claude-code`, `cursor` or `codex`). If the checkout is not built, the launcher exits with `Run pnpm install && pnpm build` instead of failing silently.
+
+| Host | Checked-in config | Notes |
+| --- | --- | --- |
+| Claude Code | `.mcp.json` | Claude Code asks you to approve a project server the first time; approve `strumentario` (`/mcp` shows its status). |
+| Cursor | `.cursor/mcp.json`, beside `hindsight` | Enable `strumentario` under Settings → MCP if it is off. |
+| Codex | `.codex/config.toml` | Codex reads project config only for trusted projects, so trust this repo when asked. POSIX shell only. |
+
+If you cannot use project config, register the same server yourself. This is the one-line Codex form (user scope, with your own path):
 
 ```bash
-claude mcp add --transport http --scope project strumentario http://localhost:3001/mcp \
+codex mcp add strumentario --env STRUMENTARIO_AGENT=codex --env STRUMENTARIO_DATA_DIR=/abs/path/to/strumentario/.strumentario/data -- node /abs/path/to/strumentario/scripts/mcp-stdio.mjs
+```
+
+See [the stdio notes](docs/server-transport-and-soak.md#stdio-transport) for how each entry finds the repo root.
+
+#### HTTP: a shared server
+
+Start the server first (`pnpm --filter @strumentario/server serve`, default `http://localhost:3001/mcp`). Each snippet below was run against that server; the `X-Strumentario-Agent` header is optional and shows up in the [change journal](docs/journal.md) so you can tell hosts apart. The checked-in stdio entries are named `strumentario`, so register an HTTP server under another name, for example `strumentario-http`, to use both.
+
+**Claude Code** (written to your local scope; use `--scope user` to make it global, or `--scope project` to write `.mcp.json`):
+
+```bash
+claude mcp add --transport http strumentario-http http://localhost:3001/mcp \
   --header "X-Strumentario-Agent: claude-code"
 ```
 
 Put the name and URL before `--header`: the flag takes several values and swallows a trailing name.
 
-**Cursor** (`.cursor/mcp.json` in the project, or `~/.cursor/mcp.json`):
+**Cursor** (`~/.cursor/mcp.json`, or `.cursor/mcp.json` under another name than the checked-in `strumentario`):
 
 ```json
 {
   "mcpServers": {
-    "strumentario": {
+    "strumentario-http": {
       "url": "http://localhost:3001/mcp",
       "headers": { "X-Strumentario-Agent": "cursor" }
     }
@@ -197,8 +219,6 @@ Put the name and URL before `--header`: the flag takes several values and swallo
 **Any other host** that speaks Streamable HTTP: point it at `http://localhost:3001/mcp`, transport `streamable-http`, and send `X-Strumentario-Agent: <your-agent-id>` if it supports custom headers. `strumentario call scaffold --json --input '{"target":"host-config"}'` prints all three files generated from the live tool list, so they cannot drift from the tool names.
 
 **Server with bearer tokens.** If you started the server with `MCP_READ_TOKEN` / `MCP_WRITE_TOKEN` / `MCP_AUTH_TOKEN`, add `--header "Authorization: Bearer $TOKEN"` (Claude Code) or `"Authorization": "Bearer <token>"` under `headers` (Cursor). Give an agent the read token to limit it to `query` and `validate`. Do not commit tokens; use your host's env-var interpolation where it has one.
-
-**Host that spawns the server (stdio).** No port, no token; see [server transport](docs/server-transport-and-soak.md#stdio-transport) for the entry.
 
 What the host sees: tools `query`, `validate`, `mutate`, `scaffold`, `repair`; resources `strumentario://schemas/handbook-page`, `strumentario://pages/{slug}` and `strumentario://journal`; prompt `review-draft`.
 

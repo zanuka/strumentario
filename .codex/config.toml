@@ -1,0 +1,13 @@
+# Project-scoped Codex config (Codex loads it only for trusted projects).
+# Codex starts MCP servers in the session's working directory and does not
+# interpolate paths, so the command finds the repo root itself and works from
+# any clone or subdirectory. POSIX shell only.
+[mcp_servers.strumentario]
+command = "sh"
+args = [
+  "-c",
+  'cd "$(git rev-parse --show-toplevel)" && STRUMENTARIO_DATA_DIR="$PWD/.strumentario/data" exec node scripts/mcp-stdio.mjs',
+]
+
+[mcp_servers.strumentario.env]
+STRUMENTARIO_AGENT = "codex"
