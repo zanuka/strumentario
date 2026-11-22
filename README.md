@@ -266,7 +266,7 @@ Global options: `--url` (default `$STRUMENTARIO_URL` or `http://127.0.0.1:3001/m
 
 ![MCP Inspector connected to Strumentario: four tools listed, validate called, structured result shown](images/inspector-validate.png)
 
-1. Start the server with `pnpm --filter @strumentario/server serve`.
+1. Start the server with `pnpm --filter @strumentario/server serve`. To browse the demo pages (`getting-started`, `content-primitives`, `local-data-store`) in Inspector, start it on the fixtures instead: `STRUMENTARIO_DATA_DIR=packages/server/test-fixtures/demo-pages pnpm --filter @strumentario/server serve`. The default store holds the [handbook](docs/workflow.md) pages.
 2. In another terminal, run `npx @modelcontextprotocol/inspector` and open its local URL.
 3. **Add Servers → Add manually**, set the transport to `streamable-http` and the URL to `http://localhost:3001/mcp` (older Inspector versions: pick **Streamable HTTP** and enter the URL), then connect.
 4. Open **Tools**: `query`, `mutate`, `validate`, `scaffold` and `repair` are listed. Open **Resources** for the page schema, stored pages and the change journal, and **Prompts** for `review-draft`.
@@ -313,7 +313,7 @@ pnpm typecheck
 pnpm test
 ```
 
-Guides: [CLI-first usage](docs/cli-guide.md), [several agents at once](docs/multi-agent.md), [how the stack fits together](docs/architecture/stack-seams.md), [why Strumentario is helpful](docs/why-strumentario.md). See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/orto-brain-details.md](./docs/orto-brain-details.md) for the Orto / Hindsight project memory bank (`.orto/`, MCP recall).
+Guides: [the handbook you maintain](docs/workflow.md), [CLI-first usage](docs/cli-guide.md), [several agents at once](docs/multi-agent.md), [how the stack fits together](docs/architecture/stack-seams.md), [why Strumentario is helpful](docs/why-strumentario.md). See [ROADMAP.md](./ROADMAP.md) for the phased plan, differentiation bets, and definition of done for v1.0. See [docs/use-cases.md](./docs/use-cases.md) for real-world scenarios and differentiation demos. See [docs/braintrust-eval-details.md](./docs/braintrust-eval-details.md) for the Braintrust eval strategy. See [docs/orto-brain-details.md](./docs/orto-brain-details.md) for the Orto / Hindsight project memory bank (`.orto/`, MCP recall).
 
 ## Relationship to Orto & Maglio
 

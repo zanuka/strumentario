@@ -68,13 +68,21 @@ describe("FileSystemPageStore", () => {
     expect(resolveDataDir({})).toBe(path.resolve("./.strumentario/data"));
   });
 
-  it("serves the committed seed pages", async () => {
-    const seeds = new FileSystemPageStore(path.join(repoRoot, ".strumentario/data"));
-    expect((await seeds.list()).map((p) => p.slug)).toEqual([
+  it("serves the demo fixture pages", async () => {
+    const fixtures = new FileSystemPageStore(path.join(serverRoot, "test-fixtures/demo-pages"));
+    expect((await fixtures.list()).map((p) => p.slug)).toEqual([
       "content-primitives",
       "getting-started",
       "local-data-store",
     ]);
+  });
+
+  it("keeps the demo fixtures out of the default store", async () => {
+    const defaultStore = new FileSystemPageStore(path.join(repoRoot, ".strumentario/data"));
+    const slugs = (await defaultStore.list()).map((p) => p.slug);
+    for (const demo of ["content-primitives", "getting-started", "local-data-store"]) {
+      expect(slugs).not.toContain(demo);
+    }
   });
 });
 

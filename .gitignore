@@ -57,6 +57,7 @@ Desktop.ini
 .strumentario/runs/
 *.server-state.json
 .strumentario/data/journal.jsonl
+.strumentario/data/.idempotency/
 
 # Orto local / generated state
 .orto/local/
