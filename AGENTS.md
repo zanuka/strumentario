@@ -10,6 +10,11 @@ We are building this in public as open source.
 
 **Not** another generic MCP framework or TypeScript server scaffolder. Peers already own boilerplate reduction (mcpkit / MCP Framework / FastMCP) and React widget auto-registration (mcp-use, official MCP Apps kits). Strumentario wins on evals-as-product, content-domain primitives, multi-surface generation from one schema, and the knowledge ↔ instruments ↔ factory stack.
 
+## Vision
+
+`STRATEGY.md` (Vision section) is the accept/resist test for changes.
+Before proposing a new tool, surface, backend or scope change, check it against "A change aligns when…" and "A change should be resisted when…"; if it conflicts, say so instead of building it.
+
 ## Core Principles (non-negotiable)
 
 1. **Protocol first, product second**  
@@ -82,7 +87,7 @@ We are building this in public as open source.
 
 ## Documentation & Public Development
 
-- Keep README, ROADMAP, and this file aligned on positioning and phase gates
+- Keep README, ROADMAP, STRATEGY.md, and this file aligned on positioning and phase gates
 - Prefer updating living docs over leaving stale comments
 - When completing a phase item, update ROADMAP status
 - Architecture notes, landscape notes, and failure postmortems are part of the product
