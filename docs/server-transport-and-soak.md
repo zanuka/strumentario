@@ -38,24 +38,20 @@ Terminal coding agents usually start MCP servers as child processes. `node packa
 - **One data directory, many processes.** Every host that spawns the server gets its own process; they share `STRUMENTARIO_DATA_DIR`. Writes to a slug are serialized across processes by a lock directory under `<data dir>/.locks/` (a holder that crashed is reclaimed after 30 s), so revision checks (`expectedRevision`) and idempotency keys (`idempotencyKey`) behave as they do with one process, and journal appends use `O_APPEND`. `stdio.test.ts` checks this with 10 processes.
 - Set `STRUMENTARIO_AGENT` per host so the journal attributes changes.
 
-Host entry (Cursor `.cursor/mcp.json`, Claude Code `.mcp.json`, and similar), with absolute paths:
+This repo registers the server for three hosts at project scope, so opening it in Claude Code, Cursor or Codex lists `query`, `validate`, `mutate`, `scaffold` and `repair` with no process to start. Run `pnpm install && pnpm build` once. Every entry runs `scripts/mcp-stdio.mjs`, a small launcher that checks `packages/server/dist/serve.js` exists, exits with `Run pnpm install && pnpm build` when it does not, and otherwise starts the server with `--stdio`. Each entry sets `STRUMENTARIO_DATA_DIR` to `.strumentario/data` and a distinct `STRUMENTARIO_AGENT`, so `strumentario journal` shows which host made each change.
 
-```json
-{
-  "mcpServers": {
-    "strumentario": {
-      "command": "node",
-      "args": ["/abs/path/to/strumentario/packages/server/dist/serve.js", "--stdio"],
-      "env": {
-        "STRUMENTARIO_DATA_DIR": "/abs/path/to/strumentario/.strumentario/data",
-        "STRUMENTARIO_AGENT": "cursor"
-      }
-    }
-  }
-}
-```
+| Host | File | Server command | Agent | How the repo root is found |
+| --- | --- | --- | --- | --- |
+| Claude Code | `.mcp.json` | `node scripts/mcp-stdio.mjs` | `claude-code` | Project servers start in the project root; `${CLAUDE_PROJECT_DIR:-.}` builds the data path. |
+| Cursor | `.cursor/mcp.json` | `node ${workspaceFolder}/scripts/mcp-stdio.mjs` | `cursor` | `${workspaceFolder}` is expanded in `args` and `env`. |
+| Codex | `.codex/config.toml` | `sh -c 'cd "$(git rev-parse --show-toplevel)" && ... node scripts/mcp-stdio.mjs'` | `codex` | Codex starts servers in the session's working directory, resolves a relative `cwd` against it too, and interpolates nothing, so the command changes to the git root itself. |
 
-Relative `STRUMENTARIO_DATA_DIR` resolves from the host's working directory for the child, so prefer an absolute path. The `scaffold` tool's `host-config` target still emits the HTTP entry; a stdio variant is a follow-up.
+- **Claude Code** asks you to approve a project-scoped server the first time it sees `.mcp.json`; approve `strumentario`. Until you do, `claude mcp list` shows it as pending.
+- **Codex** loads `.codex/config.toml` only for trusted projects. The entry needs a POSIX shell and `git`. Without project config, register it per user: `codex mcp add strumentario --env STRUMENTARIO_AGENT=codex --env STRUMENTARIO_DATA_DIR=/abs/path/to/strumentario/.strumentario/data -- node /abs/path/to/strumentario/scripts/mcp-stdio.mjs`.
+- **Cursor** shows the server beside `hindsight` in Settings → MCP.
+- Outside this repo, or for another data directory, use the same launcher or `node /abs/path/to/packages/server/dist/serve.js --stdio` with absolute paths. A relative `STRUMENTARIO_DATA_DIR` resolves from the host's working directory for the child, so prefer an absolute path there. The `scaffold` tool's `host-config` target still emits the HTTP entry; a stdio variant is a follow-up.
+
+**stdio or HTTP.** Use stdio for a host working in this repo: no port, no token, one process per host over one data directory. Use HTTP when several agents share one running server, when you want read and write [token scopes](#token-scopes), or when the agent is not on this machine's repo checkout.
 
 ## Agent identity
 

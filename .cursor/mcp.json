@@ -5,6 +5,16 @@
       "headers": {
         "Authorization": "Bearer ${env:ORTO_HINDSIGHT_API_KEY}"
       }
+    },
+    "strumentario": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/scripts/mcp-stdio.mjs"
+      ],
+      "env": {
+        "STRUMENTARIO_DATA_DIR": "${workspaceFolder}/.strumentario/data",
+        "STRUMENTARIO_AGENT": "cursor"
+      }
     }
   }
 }
