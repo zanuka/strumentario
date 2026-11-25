@@ -69,5 +69,5 @@ It is not a factory: it does not schedule, queue, order, or retry work across st
 It does not implement OAuth or user accounts; a team that exposes the server puts it behind an access layer it already runs.
 It does not grow a catalog of miscellaneous tools or a plugin marketplace.
 
-A change aligns when it makes a shared write safer, more checkable, or more traceable, keeps every surface on the published tool contracts, runs on a machine the user controls, and arrives with evidence that would catch its own regression.
+A change aligns when it makes a shared write safer, more checkable, or more traceable, keeps every surface on the published tool contracts, runs on a machine the user controls, and arrives with a check that would catch its own regression.
 A change should be resisted when it adds a private path to content, a hand-written surface contract, a tool that overlaps an existing primitive, server-side policy a client should decide, a dependency on a network or model in the core tools, a hosted endpoint, or a claim of quality that no run demonstrates.
